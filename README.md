@@ -10,8 +10,8 @@ The Methods of AI Geniuses collude to create something of true beauty.
     - Local Beam Search
   
   - GUI
-    - design GUI
-    - get it approved by Johannes
+    - design GUI (done)
+    - get it approved by Johannes (done)
     - implement it
     
  - USABILITY

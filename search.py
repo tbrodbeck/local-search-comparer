@@ -2,7 +2,9 @@ import numpy as np
 
 
 class Abstract_Search():
-
+    """
+    This is an abstract search class that all other search-algorithms can inherit.
+    """
     def __init__(self, directory):
         self.items = self.get_items(directory + '/problem1.txt')
         self.psus = self.get_psus(directory + '/problem1.txt', self.items)
@@ -107,5 +109,8 @@ class Hill_Climbing(Abstract_Search):
             print(current, self.value_function(current))
 
 
-hill_climb = Hill_Climbing('data')
-print(hill_climb.search())
+''' Testing the Search '''
+
+if __name__ == '__main__':
+    hill_climb = Hill_Climbing('data')
+    print(hill_climb.search())

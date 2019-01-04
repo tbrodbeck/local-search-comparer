@@ -15,6 +15,7 @@ class Abstract_Search():
     def get_items(self, path):
         """
         Retrieves a list of all items from the given file
+
         :param path: file path
         :return: list of items
         """
@@ -25,9 +26,17 @@ class Abstract_Search():
         items = lines[0].split(" ")
 
         return items
-    
+
 
     def get_psus(self, path, items):
+        """
+        Retrieves a list of all PSUs from the given file
+        A PSU is described by a binary array
+
+        :param path: file path
+        :param items: list of all items
+        :return: 2D array containing all psus
+        """
         with open(path) as f:
             data = f.read()
 
@@ -48,6 +57,13 @@ class Abstract_Search():
 
 
     def open_order(self, path, items):
+        """
+        Retrieves the order from the given file
+
+        :param path: file path
+        :param items: list of all get_items
+        :return: list of all ordered items
+        """
         with open(path) as f:
             order_raw = f.read()
 
@@ -61,6 +77,12 @@ class Abstract_Search():
 
 
     def value_function(self, state):
+        """
+        Evaluates how good a subset of PSU fulfills the order
+
+        :param state: binary array describing used PSUs
+        :return: value of state
+        """
 
         psus_state = np.zeros((state.size, len(self.items)), dtype=int)
 
@@ -80,6 +102,14 @@ class Abstract_Search():
 
 
     def neighbors(self, state):
+        """
+        Creates all neighbors of a given state
+        A state's neighbor is identical to the state except at exactly one
+        position
+
+        :param state: binary array describing used PSUs
+        :return: 2D array containing all state's neighbors
+        """
         neighbors = np.tile(state, (state.size, 1))
         diagonal = np.diagonal(neighbors)
 
@@ -89,6 +119,11 @@ class Abstract_Search():
         return neighbors
 
     def termination(self):
+        """
+        TODO
+
+        (?)
+        """
         return False
 
 

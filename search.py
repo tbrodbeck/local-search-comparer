@@ -170,10 +170,37 @@ class First_Choice_Hill_Climbing(Abstract_Search):
                 print(current, self.value_function(current))
 
 
+class Local_Beam_Search(Abstract_Search):
+
+    def search(self, k):
+
+        k_states = np.random.choice([True, False], (k, len(self.psus)), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
+        
+        while not self.termination():
+
+            # Generate neighbours of current states
+            all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
+            all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+
+            # If no neighbour is better than worst current state return
+            value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
+            value_current = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
+            
+            if not np.any(value_neighbors > value_current):
+                return k_states
+
+            # Else continue with k best neighbours
+            sort = np.argsort(value_neighbors)
+            k_states = all_neighbors[sort][-k:]
+            print(k_states, np.apply_along_axis(self.value_function, 1, k_states), '\n\n')
+
+
 ''' Testing the Search '''
 
 if __name__ == '__main__':
     hill_climb = Hill_Climbing('data')
     first_choice_hill_climb = First_Choice_Hill_Climbing('data')
-    print(hill_climb.search(), end='\n\n')
-    print(first_choice_hill_climb.search())
+    local_beam = Local_Beam_Search('data')
+    #print(hill_climb.search(), end='\n\n')
+    #print(first_choice_hill_climb.search(), end='\n\n')
+    print(local_beam.search(3))

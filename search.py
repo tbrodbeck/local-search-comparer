@@ -1,5 +1,5 @@
 import numpy as np
-
+from view import Print_View
 
 class Abstract_Search():
     """
@@ -10,6 +10,20 @@ class Abstract_Search():
         self.psus = self.get_psus(directory + '/problem1.txt', self.items)
         self.order = self.open_order(directory + '/order12.txt', self.items)
         self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
+        self.view = Print_View()
+
+
+    def start(self):
+        """
+        Initializes the start states of a search
+        :return: current-state, value, neighbors, value_neighbors
+        """
+        current = self.start_state
+        value = self.value_function(current)
+        neighbors = self.neighbors(current)
+        value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
+
+        return current, value, neighbors, value_neighbors
 
 
     def get_items(self, path):
@@ -118,89 +132,118 @@ class Abstract_Search():
 
         return neighbors
 
-    def termination(self):
+    def termination(self, value, value_neighbors):
         """
-        TODO
-
-        (?)
+        Checks if there is a higher value in its neighborhood
+        :param value: value
+        :param value_neighbors: list of values
+        :return: Bool
         """
-        return False
+        if np.any(value_neighbors > value):
+            return False
+        else:
+            return True
 
 
 class Hill_Climbing(Abstract_Search):
-
+    """
+    Starts with a random state and continues with the best state of its neighborhood until there is no improvement possible
+    in the neighborhood (local maximum).
+    """
     def search(self):
-        current = self.start_state
-        max_neighbor = np.full(self.psus[0].size, False)
+        current, value, neighbors, value_neighbors = self.start()
 
-        while not self.termination():
-            neighbors_of_current = self.neighbors(current)
-            max_neighbor = neighbors_of_current[np.argmax(np.apply_along_axis(self.value_function, 1, neighbors_of_current))]
+        iteration = 0
 
-            if self.value_function(max_neighbor) <= self.value_function(current):
-                return current
+        while not self.termination(value, value_neighbors):
 
+            iteration += 1
+
+            # Choose the biggest neighbour
+            max_neighbor = neighbors[
+            np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
+
+            # Calculate new current and view it
             current = max_neighbor
-            print(current, self.value_function(current))
+            value = self.value_function(current)
+            self.view.update(iteration, value)
+
+            # Create new neighbours and their values
+            neighbors = self.neighbors(current)
+            value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
 
 
 class First_Choice_Hill_Climbing(Abstract_Search):
-
+    """
+    Starts with a random state and continues with the first better state of its neighborhood until
+    there is no improvement possible in the neighborhood (local maximum).
+    """
     def search(self):
-        current = self.start_state
+        current, value, neighbors, value_neighbors = self.start()
 
-        while not self.termination():
+        iteration = 0
 
-            # Create neighbours and their values
-            neighbors_of_current = self.neighbors(current)
-            value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors_of_current)
+        while not self.termination(value, value_neighbors):
+
+            iteration += 1
 
             # Choose first neighbour that is better than current state
-            first_neighbor = neighbors_of_current[np.argmax(value_neighbors > self.value_function(current))]
+            first_bigger_neighbor = neighbors[np.argmax(value_neighbors > value)]
 
-            bigger_neighbors = value_neighbors > self.value_function(current)
+            # Calculate new current and view it
+            current = first_bigger_neighbor
+            value = self.value_function(current)
+            self.view.update(iteration, value)
 
-            # If there is no better neighbour return, else continue with first neighbour
-            if not np.any(bigger_neighbors):
-                return current
-            
-            else:
-                current = first_neighbor
-                print(current, self.value_function(current))
+            # Create new neighbours and their values
+            neighbors = self.neighbors(current)
+            value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
 
 class Local_Beam_Search(Abstract_Search):
+    """
+    Starts with k states, does hillclimbing and continues with k best values of the union of the neighborhoods.
+    """
 
     def search(self, k):
+        # initializes k start states
+        k_states = np.random.choice([True, False], (k, len(self.psus)),
+                                    p=[np.count_nonzero(self.order) / len(self.psus),
+                                       1 - (np.count_nonzero(self.order) / len(self.psus))])
 
-        k_states = np.random.choice([True, False], (k, len(self.psus)), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
-        
-        while not self.termination():
+        # Generate neighbours of current states
+        all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
+        all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+        # If no neighbour is better than worst current state return
+        value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
+        value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
 
-            # Generate neighbours of current states
-            all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
-            all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+        iteration = 0
 
-            # If no neighbour is better than worst current state return
-            value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
-            value_current = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
-            
-            if not np.any(value_neighbors > value_current):
-                return k_states
+        while not self.termination(value, value_neighbors):
+
+            iteration += 1
 
             # Else continue with k best neighbours
             sort = np.argsort(value_neighbors)
             k_states = all_neighbors[sort][-k:]
-            print(k_states, np.apply_along_axis(self.value_function, 1, k_states), '\n\n')
+            self.view.update(iteration, value)
+
+            # Generate neighbours of current states
+            all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
+            all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+            # If no neighbour is better than worst current state return
+            value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
+            value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
 
 
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    hill_climb = Hill_Climbing('data')
-    first_choice_hill_climb = First_Choice_Hill_Climbing('data')
+    # hill_climb = Hill_Climbing('data')
+    # hill_climb.search()
+    # first_choice_hill_climb = First_Choice_Hill_Climbing('data')
+    # first_choice_hill_climb.search()
     local_beam = Local_Beam_Search('data')
-    #print(hill_climb.search(), end='\n\n')
-    #print(first_choice_hill_climb.search(), end='\n\n')
-    print(local_beam.search(3))
+    local_beam.search(3)

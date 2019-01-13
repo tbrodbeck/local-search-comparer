@@ -12,6 +12,37 @@ from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search
 
 from listvar import ListVar
 
+def start_algorithm():
+    global value_history
+
+    # on-click handler for start button
+    alg_string = var_algorithm.get()
+    AlgorithmClass = algorithm_lookup[alg_string]
+
+
+    # reset graph history
+    value_history = []
+
+    if alg_string != "Local Beam Search" and alg_string != "Parallel Hillclimbing":
+
+        # variable that the search algorithms can write to, to communicate the value-function change over time
+        var_algorithm_status = tk.IntVar(w)
+        # add on-change handler to update graph
+        var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
+
+        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+        alg.search()
+
+    else:
+
+        # for local beam search and parallel hillclimbing we need a variable that can handle lists
+        var_algorithm_status = ListVar(4)
+        # again add on-change handler
+        var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
+
+        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+        alg.search(4)
+
 w = tk.Tk()
 w.title("Edmund Hillary")
 w["bg"] = "#ffffff"
@@ -34,12 +65,15 @@ algorithm_lookup = {
 var_algorithm = tk.StringVar(w)
 var_algorithm.set("Hillclimbing")
 
+var_status = tk.StringVar(w)
+var_status.set("Press 'Start' to run the selected algorithm.")
+
 # define frames for controls (left side) and the graph (right side)
 
 frame_controls = tk.Frame(master = w, bg = "#ffffff")
 frame_graph = tk.Frame(master = w,  bg = "#ffffff")
 
-frame_controls.grid(row = 0, column = 0, sticky = "NS", padx = 5, pady = 5)
+frame_controls.grid(row = 0, column = 0, sticky = "NS", padx = (10, 5), pady = (20, 5))
 frame_graph.grid(row = 0, column = 1)
 
 # CONTROLS
@@ -80,9 +114,13 @@ option_algorithm = ttk.OptionMenu(frame_controls, var_algorithm, var_algorithm.g
     *algorithm_lookup.keys())
 option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
 
-#text_status = tk.Entry(frame_controls, width = 55, textvariable = var_algorithm_status)
-#text_status.grid(row = 5, columnspan = 2, pady = (5, 0))
-#text_status["state"] = "disabled"
+text_status = tk.Text(frame_controls, width = 1, height = 19, bg = "#eeeeee")
+text_status.grid(row = 5, columnspan = 2, pady = (5, 0), sticky = "EW")
+text_status["state"] = "disabled"
+
+# button for running the selected algorithm
+button_start = ttk.Button(frame_controls, text = "Start", command = start_algorithm)
+button_start.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "WE")
 
 # GRAPH
 
@@ -118,39 +156,5 @@ def update_graph(value = None):
 update_graph()
 
 
-def start_algorithm():
-    global value_history
-
-    # on-click handler for start button
-    alg_string = var_algorithm.get()
-    AlgorithmClass = algorithm_lookup[alg_string]
-
-
-    # reset graph history
-    value_history = []
-
-    if alg_string != "Local Beam Search" and alg_string != "Parallel Hillclimbing":
-
-        # variable that the search algorithms can write to, to communicate the value-function change over time
-        var_algorithm_status = tk.IntVar(w)
-        # add on-change handler to update graph
-        var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
-
-        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
-        alg.search()
-
-    else:
-
-        # for local beam search and parallel hillclimbing we need a variable that can handle lists
-        var_algorithm_status = ListVar(4)
-        # again add on-change handler
-        var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
-
-        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
-        alg.search(4)
-
-# button for running the selected algorithm
-button_start = ttk.Button(frame_graph, text = "Start", command = start_algorithm)
-button_start.grid(row = 1, column = 0)
 
 w.mainloop()

@@ -270,15 +270,15 @@ class Simulated_Annealing(Abstract_Search):
 
     def schedule(self, temp, t):
         # Temperature is lowered by one in each step
-        if t % 10 == 0:
+        if t % 2 == 0:
             return temp - 1
         else:
-            return temp - 1
+            return temp
 
     def search(self):
 
         current = self.start_state
-        temp = 500
+        temp = 170
 
         for t in count():
 
@@ -301,15 +301,17 @@ class Simulated_Annealing(Abstract_Search):
             # with probability e^(∆E / temperature)
             else:
                 if random.random() < exp(delta_e / temp):
+                    #print("Probability:", exp(delta_e / temp))
                     current = next_neighbor
 
             # Update graph
             value = self.value_function(current)
             if self.log_var == None:
-                print(value)
+                print(current, value)
             else:
                 self.log_var.set(value)
-                self.window.update()
+                if self.window is not None:
+                    self.window.update()
 
 
 

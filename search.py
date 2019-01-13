@@ -1,6 +1,6 @@
 import numpy as np
 from view import Print_View
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import time
 
 from itertools import count
@@ -184,7 +184,7 @@ class Hill_Climbing(Abstract_Search):
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
 
-
+        return current
 
 
 class First_Choice_Hill_Climbing(Abstract_Search):
@@ -214,6 +214,7 @@ class First_Choice_Hill_Climbing(Abstract_Search):
             neighbors = self.neighbors(current)
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
+        return current
 
 class Local_Beam_Search(Abstract_Search):
     """
@@ -250,17 +251,18 @@ class Local_Beam_Search(Abstract_Search):
 
             # If no neighbour is better than worst current state return
             value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
-            value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
+            values = np.apply_along_axis(self.value_function, 1, k_states)
+            value = np.amin(values)
 
-            current = k_states[-1]
-
+            # Update graph
             if self.log_var == None:
-                print(iteration, value)
+                print(iteration, values)
             else:
-                self.log_var.set(value)
+                for i in self.log_var:
+                    self.log_var.set(i, values[i])
                 self.window.update()
 
-        return current
+        return k_states[-1]
 
 
 
@@ -304,36 +306,38 @@ class Simulated_Annealing(Abstract_Search):
             # Update graph
             value = self.value_function(current)
             if self.log_var == None:
-                print(current, value)
+                print(value)
             else:
                 self.log_var.set(value)
-                if self.window is not None:
-                    self.window.update()
+                self.window.update()
+
 
 
 class Parallel_Hillclimbing(Abstract_Search):
     """
-
+    Perform k independent hillclimb searches started from randomly generated initial states
     """
-
     def search(self, k):
-        climbers = [Hill_Climbing(self.directories[0], self.directories[1]) for i in range(k)]
+        climbers = [Hill_Climbing(self.directories[0], self.directories[1], self.log_var, self.window) for i in range(k)]
+        manager = Manager()
+        return_dict = manager.dict()
+        jobs = []
         for i in range(k):
-            print(climbers[0])
-            print(i)
-            p = Process(target=climbers[k].search)
+            p = Process(target=climbers[i].search)
+            jobs.append(p)
             p.start()
 
-
-
-
+        for p in jobs:
+            p.join()
+        print(return_dict.values())
 
 ''' Testing the Search '''
 
 if __name__ == '__main__':
     # s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     # s.search()
+    s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
+    # sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
+    # sa.search()
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    # s2.search(2)
-    sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
-    sa.search()
+    s2.search(2)

@@ -290,8 +290,7 @@ class Local_Beam_Search(Abstract_Search):
             if self.log_var == None:
                 print(iteration, values)
             else:
-                for i in self.log_var:
-                    self.log_var.set(i, values[i])
+                self.log_var.set(list(values))
                 self.window.update()
 
         return k_states[-1]
@@ -357,7 +356,7 @@ class Parallel_Hillclimbing(Abstract_Search):
         return_dict = manager.dict()
         jobs = []
         for i in range(k):
-            p = Process(target=climbers[i].search)
+            p = Process(target=climbers[i].search, args=(return_dict,))
             jobs.append(p)
             p.start()
 
@@ -365,14 +364,49 @@ class Parallel_Hillclimbing(Abstract_Search):
             p.join()
         print(return_dict.values())
 
+        current, value, neighbors, value_neighbors = self.start()
+
+        iteration = 0
+
+        while not self.termination(value, value_neighbors):
+            for i in range(k):
+                p = Process(target=climbers[i].search)
+                jobs.append(p)
+                p.start()
+            for p in jobs:
+                p.join()
+
+    def search_step(self, current, value, neighbors, value_neighbors):
+        # Choose the biggest neighbour
+        max_neighbor = neighbors[np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
+
+        # Calculate new current and view it
+        current = max_neighbor
+        value = self.value_function(current)
+        print(value)
+
+        # Create new neighbours and their values
+        neighbors = self.neighbors(current)
+        value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
+
+        return current, value, neighbors, value_neighbors
+
 ''' Testing the Search '''
 
 if __name__ == '__main__':
     s = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s.search()
+<<<<<<< HEAD
     s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     sa = Simulated_Annealing('data/problem1.txt', 'data/order12.txt')
     # sa.search()
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
     sa.print_solution(s.search())
+=======
+    # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
+    # sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
+    # sa.search()
+    s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
+    s2.search(2)
+>>>>>>> e6786c315e9f1bb3899f27408f6f0a15c5fa158f

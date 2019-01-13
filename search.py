@@ -164,8 +164,7 @@ class Hill_Climbing(Abstract_Search):
             iteration += 1
 
             # Choose the biggest neighbour
-            max_neighbor = neighbors[
-            np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
+            max_neighbor = neighbors[np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
 
             # Calculate new current and view it
             current = max_neighbor
@@ -204,7 +203,8 @@ class First_Choice_Hill_Climbing(Abstract_Search):
             # Calculate new current and view it
             current = first_bigger_neighbor
             value = self.value_function(current)
-            self.view.update(iteration, value)
+            if self.log_var is not None:    self.log_var.set(value)
+            if self.window is not None:     self.window.update()
 
             # Create new neighbours and their values
             neighbors = self.neighbors(current)
@@ -262,14 +262,14 @@ class Local_Beam_Search(Abstract_Search):
 
 class Simulated_Annealing(Abstract_Search):
 
-    def schedule(temp, t):
+    def schedule(self, temp, t):
         # Temperature is lowered by one in each step
         if t % 10 == 0:
             return temp - 1
         else:
             return temp - 1
 
-    def search():
+    def search(self):
 
         current = self.start_state
         temp = 500
@@ -316,6 +316,10 @@ class Parallel_Hillclimbing(Abstract_Search):
             p = Process(target=climbers[k].search)
             p.start()
 
+
+
+
+
 ''' Testing the Search '''
 
 if __name__ == '__main__':
@@ -323,3 +327,5 @@ if __name__ == '__main__':
     # s.search()
     s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
     s2.search(2)
+    sa = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
+    sa.search()

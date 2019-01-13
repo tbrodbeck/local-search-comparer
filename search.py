@@ -220,11 +220,12 @@ class Local_Beam_Search(Abstract_Search):
         # initializes k start states
         k_states = np.random.choice([True, False], (k, len(self.psus)),
                                     p=[np.count_nonzero(self.order) / len(self.psus),
-                                       1 - (np.count_nonzero(self.order) / len(self.psus))])
+                                    1 - (np.count_nonzero(self.order) / len(self.psus))])
 
         # Generate neighbours of current states
         all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
         all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+
         # If no neighbour is better than worst current state return
         value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
         value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
@@ -235,18 +236,71 @@ class Local_Beam_Search(Abstract_Search):
 
             iteration += 1
 
-            # Else continue with k best neighbours
+            # Continue with k best neighbours
             sort = np.argsort(value_neighbors)
             k_states = all_neighbors[sort][-k:]
-
-            self.view.update(iteration, value)
 
             # Generate neighbours of current states
             all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
             all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+
             # If no neighbour is better than worst current state return
             value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
             value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
+
+            current = k_states[-1]
+
+            if self.log_var == None:
+                print(iteration, value)
+            else:
+                self.log_var.set(value)
+                self.window.update()
+
+        return current
+
+
+
+class Simulated_Annealing(Abstract_Search):
+
+    def schedule(temp, t):
+        # Temperature is lowered by one in each step
+        if t % 10 == 0:
+            return temp - 1
+        else:
+            return temp - 1
+
+    def search():
+
+        current = self.start_state
+        temp = 500
+
+        for t in count():
+
+            # Updates temperature using the time schedule
+            temp = self.schedule(temp, t)
+
+            # Returns current state if temperature is 0
+            if temp == 0:
+                return current
+
+            # Choose random neighbour and calculates ∆E
+            next_neighbor = random.choice(self.neighbors(current))
+            delta_e = self.value_function(next_neighbor) - self.value_function(current)
+
+            # If the random neighbour is better, continue search with it
+            if delta_e > 0:
+                current = next_neighbor
+
+            # If it is worse, continue with the random neighbour
+            # with probability e^(∆E / temperature)
+            else:
+                if random.random() < exp(delta_e / temp):
+                    current = next_neighbor
+
+            # Update graph
+            value = self.value_function(current)
+            if self.log_var is not None:    self.log_var.set(value)
+            if self.window is not None:     self.window.update()
 
 
 class Parallel_Hillclimbing(Abstract_Search):

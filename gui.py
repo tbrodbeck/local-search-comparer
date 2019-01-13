@@ -8,26 +8,31 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-import numpy as np
+from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search
 
-from search import Hill_Climbing
-
+from listvar import ListVar
 
 w = tk.Tk()
-w.title("The bestest program evor!!")
+w.title("Edmund Hillary")
 w["bg"] = "#ffffff"
 w.resizable(False, False)
 
 # define tkinter variables to be used
-
-var_algorithm = tk.StringVar(w)
-var_algorithm.set("Hillclimbing")
 
 var_warehouse_path = tk.StringVar(w)
 var_warehouse_path.set("please select warehouse file")
 
 var_order_path = tk.StringVar(w)
 var_order_path.set("please select order file")
+
+algorithm_lookup = {
+    "Hillclimbing": Hill_Climbing,
+    "First Choice Hillclimbing": First_Choice_Hill_Climbing,
+    "Local Beam Search": Local_Beam_Search
+}
+
+var_algorithm = tk.StringVar(w)
+var_algorithm.set("Hillclimbing")
 
 # define frames for controls (left side) and the graph (right side)
 
@@ -40,32 +45,39 @@ frame_graph.grid(row = 0, column = 1)
 # CONTROLS
 
 def ask_filename(title, output_var):
+    # on-click handler for open-buttons
     types = [("text files (*.txt)", "*.txt"), ("all files", "*.*")]
 
     path = tk.filedialog.askopenfilename(title = title, filetypes = types)
     if path != "": output_var.set(path)
 
+# button for opening warehouse files
 button_open_warehouse = ttk.Button(frame_controls, width = 25, text = "Open Warehouse",
     command = lambda: ask_filename("Open Warehouse File", var_warehouse_path))
 button_open_warehouse.grid(row = 0, column = 0, sticky = "W")
 
+# button for opening order files
 button_open_order = ttk.Button(frame_controls, width = 25, text = "Open Order",
     command = lambda: ask_filename("Open Order File", var_order_path))
 button_open_order.grid(row = 0, column = 1, sticky = "E")
 
+# read-only text area for path to warehouse file
 text_warehouse = tk.Entry(frame_controls, width = 55, textvariable = var_warehouse_path)
 text_warehouse.grid(row = 1, columnspan = 2, pady = (5, 0))
 text_warehouse["state"] = "disabled"
 
+# read-only text area for path to order file
 text_order = tk.Entry(frame_controls, width = 55, textvariable = var_order_path)
 text_order.grid(row = 2, columnspan = 2, pady = (5, 0))
 text_order["state"] = "disabled"
 
+# visual separator
 sep_1 = ttk.Separator(frame_controls, orient = tk.HORIZONTAL)
 sep_1.grid(row = 3, columnspan = 2, pady = (10, 0), sticky = "EW")
 
+# drop-down menu for selecting the search algorithm
 option_algorithm = ttk.OptionMenu(frame_controls, var_algorithm, var_algorithm.get(),
-    "Hillclimbing", "Local Beam Search")
+    *algorithm_lookup.keys())
 option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
 
 #text_status = tk.Entry(frame_controls, width = 55, textvariable = var_algorithm_status)
@@ -74,35 +86,71 @@ option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
 
 # GRAPH
 
+# create Figure and Axes object
 value_history = []
 fig = Figure(figsize = (5, 5))
+fig.set_tight_layout(True)
 
-def update_graph(var_value):
-    value_history.append(var_value.get())
+ax = fig.add_subplot(1, 1, 1)
 
-    ax = fig.add_subplot(1, 1, 1)
+def update_graph(value = None):
+    # updates the graph with a new value
+    # works by just creating a new graph, which is slow, but the alternative is annoying to implement
 
-    ax.plot(range(len(value_history)), value_history)
+    if value is not None: value_history.append(value)
 
-    fig.set_tight_layout(True)
+    ax.clear()
+
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Value function")
+
+    zipped = zip(*value_history)
+
+    for curve in zipped:
+        ax.plot(range(len(curve)), curve)
+        ax.plot(range(len(curve)), [0] * len(curve), linestyle = "-.")
 
     canvas = FigureCanvasTkAgg(fig, master = frame_graph)
     canvas.draw()
     plt_widget = canvas.get_tk_widget()
     plt_widget.grid(row = 0, column = 0, columnspan = 2)
 
-var_algorithm_status = tk.IntVar(w)
-var_algorithm_status.trace("w", lambda *args: update_graph(var_algorithm_status))
+update_graph()
+
 
 def start_algorithm():
-    hc = Hill_Climbing(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
-    hc.search()
+    global value_history
 
+    # on-click handler for start button
+    alg_string = var_algorithm.get()
+    AlgorithmClass = algorithm_lookup[alg_string]
+
+
+    # reset graph history
+    value_history = []
+
+    if alg_string != "Local Beam Search" and alg_string != "Parallel Hillclimbing":
+
+        # variable that the search algorithms can write to, to communicate the value-function change over time
+        var_algorithm_status = tk.IntVar(w)
+        # add on-change handler to update graph
+        var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
+
+        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+        alg.search()
+
+    else:
+
+        # for local beam search and parallel hillclimbing we need a variable that can handle lists
+        var_algorithm_status = ListVar(4)
+        # again add on-change handler
+        var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
+
+        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+        alg.search(4)
+
+# button for running the selected algorithm
 button_start = ttk.Button(frame_graph, text = "Start", command = start_algorithm)
 button_start.grid(row = 1, column = 0)
-
-button_cancel = ttk.Button(frame_graph, text = "Cancel")
-button_cancel.grid(row = 1, column = 1)
-
 
 w.mainloop()

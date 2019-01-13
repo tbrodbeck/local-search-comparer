@@ -258,8 +258,7 @@ class Local_Beam_Search(Abstract_Search):
             if self.log_var == None:
                 print(iteration, values)
             else:
-                for i in range(k):
-                    self.log_var.set(i, values[i])
+                self.log_var.set(list(values))
                 self.window.update()
 
         return k_states[-1]

@@ -1,11 +1,14 @@
 import numpy as np
 from view import Print_View
+from multiprocessing import Process
+import time
 
 class Abstract_Search():
     """
     This is an abstract search class that all other search-algorithms can inherit.
     """
     def __init__(self, warehouse, order, log_var = None, window = None):
+        self.directories = [warehouse, order]
         self.items = self.get_items(warehouse)
         self.psus = self.get_psus(warehouse, self.items)
         self.order = self.open_order(order, self.items)
@@ -167,8 +170,11 @@ class Hill_Climbing(Abstract_Search):
             # Calculate new current and view it
             current = max_neighbor
             value = self.value_function(current)
-            if self.log_var is not None:    self.log_var.set(value)
-            if self.window is not None:     self.window.update()
+            if self.log_var == None:
+                print(iteration, value)
+            else:
+                self.log_var.set(value)
+                self.window.update()
 
             # Create new neighbours and their values
             neighbors = self.neighbors(current)
@@ -232,6 +238,7 @@ class Local_Beam_Search(Abstract_Search):
             # Else continue with k best neighbours
             sort = np.argsort(value_neighbors)
             k_states = all_neighbors[sort][-k:]
+
             self.view.update(iteration, value)
 
             # Generate neighbours of current states
@@ -242,12 +249,23 @@ class Local_Beam_Search(Abstract_Search):
             value = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
 
 
+class Parallel_Hillclimbing(Abstract_Search):
+    """
+
+    """
+
+    def search(self, k):
+        climbers = [Hill_Climbing(self.directories[0], self.directories[1]) for i in range(k)]
+        for i in range(k):
+            print(climbers[0])
+            print(i)
+            p = Process(target=climbers[k].search)
+            p.start()
+
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    # hill_climb = Hill_Climbing('data')
-    # hill_climb.search()
-    # first_choice_hill_climb = First_Choice_Hill_Climbing('data')
-    # first_choice_hill_climb.search()
-    local_beam = Local_Beam_Search('data')
-    local_beam.search(3)
+    # s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
+    # s.search()
+    s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
+    s2.search(2)

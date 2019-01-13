@@ -3,6 +3,10 @@ from view import Print_View
 from multiprocessing import Process
 import time
 
+from itertools import count
+import random
+from math import exp
+
 class Abstract_Search():
     """
     This is an abstract search class that all other search-algorithms can inherit.
@@ -299,8 +303,12 @@ class Simulated_Annealing(Abstract_Search):
 
             # Update graph
             value = self.value_function(current)
-            if self.log_var is not None:    self.log_var.set(value)
-            if self.window is not None:     self.window.update()
+            if self.log_var == None:
+                print(current, value)
+            else:
+                self.log_var.set(value)
+                if self.window is not None:
+                    self.window.update()
 
 
 class Parallel_Hillclimbing(Abstract_Search):
@@ -325,7 +333,7 @@ class Parallel_Hillclimbing(Abstract_Search):
 if __name__ == '__main__':
     # s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     # s.search()
-    s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    s2.search(2)
-    sa = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
+    # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
+    # s2.search(2)
+    sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
     sa.search()

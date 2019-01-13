@@ -3,7 +3,7 @@ from view import Print_View
 from multiprocessing import Process, Manager
 import time
 
-from itertools import count
+from itertools import count, compress
 import random
 from math import exp
 
@@ -96,6 +96,38 @@ class Abstract_Search():
             order[items.index(item_in_order)] = True
 
         return order
+
+
+    def print_solution(self, final_state):
+        """
+        """
+        #print(final_state)
+
+        # Numbers of psus needed
+        number_of_psus = np.count_nonzero(final_state)
+        print('Number of PSUs needed:', number_of_psus)
+
+        psus_used_indices = np.nonzero(final_state)[0]
+        psus_used = self.psus[psus_used_indices]
+
+        order_raw = set(compress(self.items, self.order))
+        print("Order:", order_raw)
+        print()
+
+        for i in range(number_of_psus):
+            print(f"PSU n°{psus_used_indices[i] + 1}", end="\t")
+
+            items_in_psu = np.nonzero(np.asarray(psus_used[i]))
+            items_in_psu = set(np.asarray(self.items)[items_in_psu])
+
+            items_in_order = items_in_psu.intersection(order_raw)
+
+            print(items_in_order)
+
+
+
+
+
 
 
     def value_function(self, state):
@@ -336,10 +368,11 @@ class Parallel_Hillclimbing(Abstract_Search):
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    # s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
+    s = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s.search()
-    s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
-    # sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
+    s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
+    s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
+    sa = Simulated_Annealing('data/problem1.txt', 'data/order12.txt')
     # sa.search()
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    s2.search(2)
+    sa.print_solution(s.search())

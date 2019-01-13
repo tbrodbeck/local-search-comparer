@@ -5,12 +5,13 @@ class Abstract_Search():
     """
     This is an abstract search class that all other search-algorithms can inherit.
     """
-    def __init__(self, directory):
-        self.items = self.get_items(directory + '/problem1.txt')
-        self.psus = self.get_psus(directory + '/problem1.txt', self.items)
-        self.order = self.open_order(directory + '/order12.txt', self.items)
+    def __init__(self, warehouse, order, log_var = None, window = None):
+        self.items = self.get_items(warehouse)
+        self.psus = self.get_psus(warehouse, self.items)
+        self.order = self.open_order(order, self.items)
         self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
-        self.view = Print_View()
+        self.log_var = log_var
+        self.window = window
 
 
     def start(self):
@@ -166,11 +167,14 @@ class Hill_Climbing(Abstract_Search):
             # Calculate new current and view it
             current = max_neighbor
             value = self.value_function(current)
-            self.view.update(iteration, value)
+            if self.log_var is not None:    self.log_var.set(value)
+            if self.window is not None:     self.window.update()
 
             # Create new neighbours and their values
             neighbors = self.neighbors(current)
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
+
+
 
 
 

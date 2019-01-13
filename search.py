@@ -15,6 +15,7 @@ class Abstract_Search():
     def get_items(self, path):
         """
         Retrieves a list of all items from the given file
+
         :param path: file path
         :return: list of items
         """
@@ -25,9 +26,17 @@ class Abstract_Search():
         items = lines[0].split(" ")
 
         return items
-    
+
 
     def get_psus(self, path, items):
+        """
+        Retrieves a list of all PSUs from the given file
+        A PSU is described by a binary array
+
+        :param path: file path
+        :param items: list of all items
+        :return: 2D array containing all psus
+        """
         with open(path) as f:
             data = f.read()
 
@@ -48,6 +57,13 @@ class Abstract_Search():
 
 
     def open_order(self, path, items):
+        """
+        Retrieves the order from the given file
+
+        :param path: file path
+        :param items: list of all get_items
+        :return: list of all ordered items
+        """
         with open(path) as f:
             order_raw = f.read()
 
@@ -61,6 +77,12 @@ class Abstract_Search():
 
 
     def value_function(self, state):
+        """
+        Evaluates how good a subset of PSU fulfills the order
+
+        :param state: binary array describing used PSUs
+        :return: value of state
+        """
 
         psus_state = np.zeros((state.size, len(self.items)), dtype=int)
 
@@ -80,6 +102,14 @@ class Abstract_Search():
 
 
     def neighbors(self, state):
+        """
+        Creates all neighbors of a given state
+        A state's neighbor is identical to the state except at exactly one
+        position
+
+        :param state: binary array describing used PSUs
+        :return: 2D array containing all state's neighbors
+        """
         neighbors = np.tile(state, (state.size, 1))
         diagonal = np.diagonal(neighbors)
 
@@ -89,6 +119,11 @@ class Abstract_Search():
         return neighbors
 
     def termination(self):
+        """
+        TODO
+
+        (?)
+        """
         return False
 
 
@@ -109,8 +144,63 @@ class Hill_Climbing(Abstract_Search):
             print(current, self.value_function(current))
 
 
+
+class First_Choice_Hill_Climbing(Abstract_Search):
+
+    def search(self):
+        current = self.start_state
+
+        while not self.termination():
+
+            # Create neighbours and their values
+            neighbors_of_current = self.neighbors(current)
+            value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors_of_current)
+
+            # Choose first neighbour that is better than current state
+            first_neighbor = neighbors_of_current[np.argmax(value_neighbors > self.value_function(current))]
+
+            bigger_neighbors = value_neighbors > self.value_function(current)
+
+            # If there is no better neighbour return, else continue with first neighbour
+            if not np.any(bigger_neighbors):
+                return current
+            
+            else:
+                current = first_neighbor
+                print(current, self.value_function(current))
+
+
+class Local_Beam_Search(Abstract_Search):
+
+    def search(self, k):
+
+        k_states = np.random.choice([True, False], (k, len(self.psus)), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
+        
+        while not self.termination():
+
+            # Generate neighbours of current states
+            all_neighbors = np.apply_along_axis(self.neighbors, 1, k_states)
+            all_neighbors = all_neighbors.reshape(-1, all_neighbors.shape[-1])
+
+            # If no neighbour is better than worst current state return
+            value_neighbors = np.apply_along_axis(self.value_function, 1, all_neighbors)
+            value_current = np.amin(np.apply_along_axis(self.value_function, 1, k_states))
+            
+            if not np.any(value_neighbors > value_current):
+                return k_states
+
+            # Else continue with k best neighbours
+            sort = np.argsort(value_neighbors)
+            k_states = all_neighbors[sort][-k:]
+            print(k_states, np.apply_along_axis(self.value_function, 1, k_states), '\n\n')
+
+
 ''' Testing the Search '''
 
 if __name__ == '__main__':
     hill_climb = Hill_Climbing('data')
-    print(hill_climb.search())
+    first_choice_hill_climb = First_Choice_Hill_Climbing('data')
+    local_beam = Local_Beam_Search('data')
+    #print(hill_climb.search(), end='\n\n')
+    #print(first_choice_hill_climb.search(), end='\n\n')
+    print(local_beam.search(3))

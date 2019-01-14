@@ -300,7 +300,7 @@ class Local_Beam_Search(Abstract_Search):
 class Simulated_Annealing(Abstract_Search):
 
     def schedule(self, temp, t):
-        # Temperature is lowered by one in each step
+        # Temperature is lowered by one every t'th step
         if t % 2 == 0:
             return temp - 1
         else:
@@ -403,6 +403,11 @@ class Parallel_Hillclimbing(Abstract_Search):
             else:
                 self.log_var.set(values)
                 self.window.update()
+
+        # returns biggest value
+        return max(values)
+
+
 
     def search_step(self, neighbors, procnum, return_dict):
         """

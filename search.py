@@ -2,6 +2,7 @@ import numpy as np
 from view import Print_View
 from multiprocessing import Process, Manager
 import time
+import scipy
 
 from itertools import count, compress
 import random
@@ -351,62 +352,87 @@ class Parallel_Hillclimbing(Abstract_Search):
     Perform k independent hillclimb searches started from randomly generated initial states
     """
     def search(self, k):
-        climbers = [Hill_Climbing(self.directories[0], self.directories[1], self.log_var, self.window) for i in range(k)]
+        # Process manager for value extraction in multiprocessing
         manager = Manager()
-        return_dict = manager.dict()
-        jobs = []
+
+        # value to check if all searches terminated
+        terminated = False
+        # list to extract if a single search terminated
+        terminations = [False for i in range(k)]
+
+        # save states
+        values = [0 for i in range(k)]
+        neighborss = [0 for i in range(k)]
+        value_neighbors = [0 for i in range(k)]
+
+        # initialize k neighbors from a start state
+
         for i in range(k):
-            p = Process(target=climbers[i].search, args=(return_dict,))
-            jobs.append(p)
-            p.start()
+            # we need to create a random initialization for every start-state first
+            start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
+            neighborss[i] = self.neighbors(start_state)
 
-        for p in jobs:
-            p.join()
-        print(return_dict.values())
+        while not terminated:
+            # dict for value extraction
+            return_dict = manager.dict()
 
-        current, value, neighbors, value_neighbors = self.start()
-
-        iteration = 0
-
-        while not self.termination(value, value_neighbors):
+            # start k jobs
+            jobs = []
             for i in range(k):
-                p = Process(target=climbers[i].search)
-                jobs.append(p)
-                p.start()
+                if not terminations[i]:
+                    p = Process(target=self.search_step, args=(neighborss[i], i, return_dict,))
+                    jobs.append(p)
+                    p.start()
+
+            # run them in parallel and wait for all to end their iteration
             for p in jobs:
                 p.join()
 
-    def search_step(self, current, value, neighbors, value_neighbors):
+            # checks if the termination condition is fullfilled and extracts states
+            terminated = True
+            for i in range(k):
+                if not terminations[i]:
+                    terminated = terminated and self.termination(return_dict[i][1], return_dict[i][3])
+                    terminations[i] = self.termination(return_dict[i][1], return_dict[i][3])
+                    neighborss[i] = return_dict[i][2]
+                    value_neighbors[i] = return_dict[i][3]
+                    values[i] = return_dict[i][1]
+
+            # Update graph
+            if self.log_var == None:
+                print('value:', values, 'done:', terminations)
+            else:
+                self.log_var.set(values)
+                self.window.update()
+
+    def search_step(self, neighbors, procnum, return_dict):
+        """
+        This is a function that does one single hillclimb step.
+        :param neighbors:
+        :param procnum: number of this parallel process
+        :param return_dict: current, value, neighbors, value_neighbors are returned via this dictionary
+        """
         # Choose the biggest neighbour
         max_neighbor = neighbors[np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
 
         # Calculate new current and view it
         current = max_neighbor
         value = self.value_function(current)
-        print(value)
 
         # Create new neighbours and their values
         neighbors = self.neighbors(current)
         value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
-        return current, value, neighbors, value_neighbors
+        return_dict[procnum] = current, value, neighbors, value_neighbors
 
 ''' Testing the Search '''
 
 if __name__ == '__main__':
     s = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s.search()
-<<<<<<< HEAD
     s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
-    sa = Simulated_Annealing('data/problem1.txt', 'data/order12.txt')
-    # sa.search()
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    sa.print_solution(s.search())
-=======
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
-    # sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
-    # sa.search()
     s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    s2.search(2)
->>>>>>> e6786c315e9f1bb3899f27408f6f0a15c5fa158f
+    s2.search(9)

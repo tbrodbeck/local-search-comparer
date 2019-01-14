@@ -1,5 +1,4 @@
 import numpy as np
-from view import Print_View
 from multiprocessing import Process, Manager
 import time
 import scipy
@@ -434,9 +433,6 @@ if __name__ == '__main__':
     s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-
-    sa.print_solution(s.search())
-
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 

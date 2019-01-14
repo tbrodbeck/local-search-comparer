@@ -391,8 +391,8 @@ class Parallel_Hillclimbing(Abstract_Search):
             terminated = True
             for i in range(k):
                 if not terminations[i]:
-                    terminated = terminated and self.termination(return_dict[i][1], return_dict[i][3])
                     terminations[i] = self.termination(return_dict[i][1], return_dict[i][3])
+                    terminated = terminated and terminations[i]
                     neighborss[i] = return_dict[i][2]
                     value_neighbors[i] = return_dict[i][3]
                     values[i] = return_dict[i][1]

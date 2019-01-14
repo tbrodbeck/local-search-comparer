@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search
+from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search, Simulated_Annealing, Parallel_Hillclimbing
 
 from listvar import ListVar
 
@@ -59,7 +59,9 @@ var_order_path.set("please select order file")
 algorithm_lookup = {
     "Hillclimbing": Hill_Climbing,
     "First Choice Hillclimbing": First_Choice_Hill_Climbing,
-    "Local Beam Search": Local_Beam_Search
+    "Local Beam Search": Local_Beam_Search,
+    "Simulated Annealing": Simulated_Annealing,
+    "Parallel Hillclimbing": Parallel_Hillclimbing,
 }
 
 var_algorithm = tk.StringVar(w)

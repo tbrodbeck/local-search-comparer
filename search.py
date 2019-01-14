@@ -396,17 +396,17 @@ class Parallel_Hillclimbing(Abstract_Search):
 if __name__ == '__main__':
     s = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s.search()
-<<<<<<< HEAD
+#<<<<<<< HEAD
     s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     sa = Simulated_Annealing('data/problem1.txt', 'data/order12.txt')
     # sa.search()
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
     sa.print_solution(s.search())
-=======
+#=======
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     # sa = Simulated_Annealing('data/problem_test.txt', 'data/order_test.txt')
     # sa.search()
     s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
     s2.search(2)
->>>>>>> e6786c315e9f1bb3899f27408f6f0a15c5fa158f
+#>>>>>>> e6786c315e9f1bb3899f27408f6f0a15c5fa158f

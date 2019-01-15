@@ -380,7 +380,7 @@ class Parallel_Hillclimbing(Abstract_Search):
             jobs = []
             for i in range(k):
                 if not terminations[i]:
-                    p = Process(target=self.search_step, args=(neighborss[i], i, return_dict,))
+                    p = Process(target=search_step, args=(neighborss[i], i, return_dict, self.order, self.items, self.psus))
                     jobs.append(p)
                     p.start()
 
@@ -405,25 +405,71 @@ class Parallel_Hillclimbing(Abstract_Search):
                 self.log_var.set(values)
                 self.window.update()
 
-    def search_step(self, neighbors, procnum, return_dict):
+
+
+
+def search_step(neighbors, procnum, return_dict, order, items, psus):
+    """
+    This is a function that does one single hillclimb step.
+    :param neighbors:
+    :param procnum: number of this parallel process
+    :param return_dict: current, value, neighbors, value_neighbors are returned via this dictionary
+    """
+
+    def neighbors_func(state):
         """
-        This is a function that does one single hillclimb step.
-        :param neighbors:
-        :param procnum: number of this parallel process
-        :param return_dict: current, value, neighbors, value_neighbors are returned via this dictionary
+        Creates all neighbors of a given state
+        A state's neighbor is identical to the state except at exactly one
+        position
+
+        :param state: binary array describing used PSUs
+        :return: 2D array containing all state's neighbors
         """
-        # Choose the biggest neighbour
-        max_neighbor = neighbors[np.argmax(np.apply_along_axis(self.value_function, 1, neighbors))]
+        neighbors = np.tile(state, (state.size, 1))
+        diagonal = np.diagonal(neighbors)
 
-        # Calculate new current and view it
-        current = max_neighbor
-        value = self.value_function(current)
+        for i in range(state.size):
+            neighbors[i, i] = not diagonal[i]
 
-        # Create new neighbours and their values
-        neighbors = self.neighbors(current)
-        value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
+        return neighbors
 
-        return_dict[procnum] = current, value, neighbors, value_neighbors
+    def value_function(state, order, items, psus):
+        """
+        Evaluates how good a subset of PSU fulfills the order
+
+        :param state: binary array describing used PSUs
+        :return: value of state
+        """
+
+        psus_state = np.zeros((state.size, len(items)), dtype=int)
+
+        for index, psu in np.ndenumerate(state):
+            if psu:
+                psus_state[index] = psus[index]
+
+        items = np.bitwise_or.reduce(psus_state, 0)
+        total_items = items[order]
+        # print(state, total_items, end="")
+
+        if np.all(total_items):
+            return 2 * np.count_nonzero(order) - np.count_nonzero(state)
+
+        else:
+            return -10 * np.count_nonzero(total_items == 0)
+
+
+    # Choose the biggest neighbour
+    max_neighbor = neighbors[np.argmax(np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors))]
+
+    # Calculate new current and view it
+    current = max_neighbor
+    value = value_function(current, order, items, psus)
+
+    # Create new neighbours and their values
+    neighbors = neighbors_func(current)
+    value_neighbors = np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors)
+
+    return_dict[procnum] = current, value, neighbors, value_neighbors
 
 ''' Testing the Search '''
 

@@ -12,6 +12,13 @@ from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search,
 
 from listvar import ListVar
 
+def ask_filename(title, output_var):
+    # on-click handler for open-buttons
+    types = [("text files (*.txt)", "*.txt"), ("all files", "*.*")]
+
+    path = tk.filedialog.askopenfilename(title = title, filetypes = types)
+    if path != "": output_var.set(path)
+
 def start_algorithm():
     global value_history
 
@@ -40,98 +47,10 @@ def start_algorithm():
         # again add on-change handler
         var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
 
-        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(),
+            var_algorithm_status, w
+        )
         alg.search(4)
-
-w = tk.Tk()
-w.title("Edmund Hillary")
-w["bg"] = "#ffffff"
-w.resizable(False, False)
-
-# define tkinter variables to be used
-
-var_warehouse_path = tk.StringVar(w)
-var_warehouse_path.set("please select warehouse file")
-
-var_order_path = tk.StringVar(w)
-var_order_path.set("please select order file")
-
-algorithm_lookup = {
-    "Hillclimbing": Hill_Climbing,
-    "First Choice Hillclimbing": First_Choice_Hill_Climbing,
-    "Local Beam Search": Local_Beam_Search,
-    "Simulated Annealing": Simulated_Annealing,
-    "Parallel Hillclimbing": Parallel_Hillclimbing,
-}
-
-var_algorithm = tk.StringVar(w)
-var_algorithm.set("Hillclimbing")
-
-var_status = tk.StringVar(w)
-var_status.set("Press 'Start' to run the selected algorithm.")
-
-# define frames for controls (left side) and the graph (right side)
-
-frame_controls = tk.Frame(master = w, bg = "#ffffff")
-frame_graph = tk.Frame(master = w,  bg = "#ffffff")
-
-frame_controls.grid(row = 0, column = 0, sticky = "NS", padx = (10, 5), pady = (20, 5))
-frame_graph.grid(row = 0, column = 1)
-
-# CONTROLS
-
-def ask_filename(title, output_var):
-    # on-click handler for open-buttons
-    types = [("text files (*.txt)", "*.txt"), ("all files", "*.*")]
-
-    path = tk.filedialog.askopenfilename(title = title, filetypes = types)
-    if path != "": output_var.set(path)
-
-# button for opening warehouse files
-button_open_warehouse = ttk.Button(frame_controls, width = 25, text = "Open Warehouse",
-    command = lambda: ask_filename("Open Warehouse File", var_warehouse_path))
-button_open_warehouse.grid(row = 0, column = 0, sticky = "W")
-
-# button for opening order files
-button_open_order = ttk.Button(frame_controls, width = 25, text = "Open Order",
-    command = lambda: ask_filename("Open Order File", var_order_path))
-button_open_order.grid(row = 0, column = 1, sticky = "E")
-
-# read-only text area for path to warehouse file
-text_warehouse = tk.Entry(frame_controls, width = 55, textvariable = var_warehouse_path)
-text_warehouse.grid(row = 1, columnspan = 2, pady = (5, 0))
-text_warehouse["state"] = "disabled"
-
-# read-only text area for path to order file
-text_order = tk.Entry(frame_controls, width = 55, textvariable = var_order_path)
-text_order.grid(row = 2, columnspan = 2, pady = (5, 0))
-text_order["state"] = "disabled"
-
-# visual separator
-sep_1 = ttk.Separator(frame_controls, orient = tk.HORIZONTAL)
-sep_1.grid(row = 3, columnspan = 2, pady = (10, 0), sticky = "EW")
-
-# drop-down menu for selecting the search algorithm
-option_algorithm = ttk.OptionMenu(frame_controls, var_algorithm, var_algorithm.get(),
-    *algorithm_lookup.keys())
-option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
-
-text_status = tk.Text(frame_controls, width = 1, height = 19, bg = "#eeeeee")
-text_status.grid(row = 5, columnspan = 2, pady = (5, 0), sticky = "EW")
-text_status["state"] = "disabled"
-
-# button for running the selected algorithm
-button_start = ttk.Button(frame_controls, text = "Start", command = start_algorithm)
-button_start.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "WE")
-
-# GRAPH
-
-# create Figure and Axes object
-value_history = []
-fig = Figure(figsize = (5, 5))
-fig.set_tight_layout(True)
-
-ax = fig.add_subplot(1, 1, 1)
 
 def update_graph(value = None):
     # updates the graph with a new value
@@ -155,8 +74,95 @@ def update_graph(value = None):
     plt_widget = canvas.get_tk_widget()
     plt_widget.grid(row = 0, column = 0, columnspan = 2)
 
-update_graph()
+
+if __name__ == "__main__":
+
+    w = tk.Tk()
+    w.title("Edmund Hillary")
+    w["bg"] = "#ffffff"
+    w.resizable(False, False)
+
+    # define tkinter variables to be used
+
+    var_warehouse_path = tk.StringVar(w)
+    var_warehouse_path.set("please select warehouse file")
+
+    var_order_path = tk.StringVar(w)
+    var_order_path.set("please select order file")
+
+    algorithm_lookup = {
+        "Hillclimbing": Hill_Climbing,
+        "First Choice Hillclimbing": First_Choice_Hill_Climbing,
+        "Local Beam Search": Local_Beam_Search,
+        "Simulated Annealing": Simulated_Annealing,
+        "Parallel Hillclimbing": Parallel_Hillclimbing,
+    }
+
+    var_algorithm = tk.StringVar(w)
+    var_algorithm.set("Hillclimbing")
+
+    var_status = tk.StringVar(w)
+    var_status.set("Press 'Start' to run the selected algorithm.")
+
+    # define frames for controls (left side) and the graph (right side)
+
+    frame_controls = tk.Frame(master = w, bg = "#ffffff")
+    frame_graph = tk.Frame(master = w,  bg = "#ffffff")
+
+    frame_controls.grid(row = 0, column = 0, sticky = "NS", padx = (10, 5), pady = (20, 5))
+    frame_graph.grid(row = 0, column = 1)
+
+    # CONTROLS
+
+    # button for opening warehouse files
+    button_open_warehouse = ttk.Button(frame_controls, width = 25, text = "Open Warehouse",
+        command = lambda: ask_filename("Open Warehouse File", var_warehouse_path))
+    button_open_warehouse.grid(row = 0, column = 0, sticky = "W")
+
+    # button for opening order files
+    button_open_order = ttk.Button(frame_controls, width = 25, text = "Open Order",
+        command = lambda: ask_filename("Open Order File", var_order_path))
+    button_open_order.grid(row = 0, column = 1, sticky = "E")
+
+    # read-only text area for path to warehouse file
+    text_warehouse = tk.Entry(frame_controls, width = 55, textvariable = var_warehouse_path)
+    text_warehouse.grid(row = 1, columnspan = 2, pady = (5, 0))
+    text_warehouse["state"] = "disabled"
+
+    # read-only text area for path to order file
+    text_order = tk.Entry(frame_controls, width = 55, textvariable = var_order_path)
+    text_order.grid(row = 2, columnspan = 2, pady = (5, 0))
+    text_order["state"] = "disabled"
+
+    # visual separator
+    sep_1 = ttk.Separator(frame_controls, orient = tk.HORIZONTAL)
+    sep_1.grid(row = 3, columnspan = 2, pady = (10, 0), sticky = "EW")
+
+    # drop-down menu for selecting the search algorithm
+    option_algorithm = ttk.OptionMenu(frame_controls, var_algorithm, var_algorithm.get(),
+        *algorithm_lookup.keys())
+    option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
+
+    text_status = tk.Text(frame_controls, width = 1, height = 19, bg = "#eeeeee")
+    text_status.grid(row = 5, columnspan = 2, pady = (5, 0), sticky = "EW")
+    text_status["state"] = "disabled"
+
+    # button for running the selected algorithm
+    button_start = ttk.Button(frame_controls, text = "Start", command = start_algorithm)
+    button_start.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "WE")
+
+    # GRAPH
+
+    # create Figure and Axes object
+    value_history = []
+    fig = Figure(figsize = (5, 5))
+    fig.set_tight_layout(True)
+
+    ax = fig.add_subplot(1, 1, 1)
+
+
+    update_graph()
 
 
 
-w.mainloop()
+    w.mainloop()

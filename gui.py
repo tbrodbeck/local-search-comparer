@@ -8,7 +8,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search, Simulated_Annealing, Parallel_Hillclimbing
+from search import Hill_Climbing, First_Choice_Hill_Climbing, Local_Beam_Search, Simulated_Annealing
+from parallel_hillclimbing import Parallel_Hillclimbing
 
 from listvar import ListVar
 

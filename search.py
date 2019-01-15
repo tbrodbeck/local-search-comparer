@@ -7,6 +7,8 @@ from itertools import count, compress
 import random
 from math import exp
 
+from searchutils import value_function, neighbors_func
+
 class Abstract_Search():
     """
     This is an abstract search class that all other search-algorithms can inherit.
@@ -138,21 +140,7 @@ class Abstract_Search():
         :return: value of state
         """
 
-        psus_state = np.zeros((state.size, len(self.items)), dtype=int)
-
-        for index, psu in np.ndenumerate(state):
-            if psu:
-                psus_state[index] = self.psus[index]
-
-        items = np.bitwise_or.reduce(psus_state, 0)
-        total_items = items[self.order]
-        # print(state, total_items, end="")
-
-        if np.all(total_items):
-            return 2 * np.count_nonzero(self.order) - np.count_nonzero(state)
-
-        else:
-            return -10 * np.count_nonzero(total_items == 0)
+        return value_function(state, self.order, self.items, self.psus)
 
 
     def neighbors(self, state):
@@ -164,13 +152,8 @@ class Abstract_Search():
         :param state: binary array describing used PSUs
         :return: 2D array containing all state's neighbors
         """
-        neighbors = np.tile(state, (state.size, 1))
-        diagonal = np.diagonal(neighbors)
 
-        for i in range(state.size):
-            neighbors[i, i] = not diagonal[i]
-
-        return neighbors
+        return neighbors_func(state)
 
     def termination(self, value, value_neighbors):
         """
@@ -345,130 +328,6 @@ class Simulated_Annealing(Abstract_Search):
                     self.window.update()
 
 
-
-class Parallel_Hillclimbing(Abstract_Search):
-    """
-    Perform k independent hillclimb searches started from randomly generated initial states
-    """
-    def search(self, k):
-        # Process manager for value extraction in multiprocessing
-        manager = Manager()
-
-        # value to check if all searches terminated
-        terminated = False
-        # list to extract if a single search terminated
-        terminations = [False for i in range(k)]
-
-        # save states
-        values = [0 for i in range(k)]
-        neighborss = [0 for i in range(k)]
-        value_neighbors = [0 for i in range(k)]
-
-        # initialize k neighbors from a start state
-
-        for i in range(k):
-            # we need to create a random initialization for every start-state first
-            start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
-            neighborss[i] = self.neighbors(start_state)
-
-        while not terminated:
-            # dict for value extraction
-            return_dict = manager.dict()
-
-            # start k jobs
-            jobs = []
-            for i in range(k):
-                if not terminations[i]:
-                    p = Process(target=search_step, args=(neighborss[i], i, return_dict, self.order, self.items, self.psus))
-                    jobs.append(p)
-                    p.start()
-
-            # run them in parallel and wait for all to end their iteration
-            for p in jobs:
-                p.join()
-
-            # checks if the termination condition is fullfilled and extracts states
-            terminated = True
-            for i in range(k):
-                if not terminations[i]:
-                    terminations[i] = self.termination(return_dict[i][1], return_dict[i][3])
-                    terminated = terminations[i] and terminated
-                    neighborss[i] = return_dict[i][2]
-                    value_neighbors[i] = return_dict[i][3]
-                    values[i] = return_dict[i][1]
-
-            # Update graph
-            if self.log_var == None:
-                print('value:', values, 'done:', terminations)
-            else:
-                self.log_var.set(values)
-                self.window.update()
-
-
-
-
-def search_step(neighbors, procnum, return_dict, order, items, psus):
-    """
-    This is a function that does one single hillclimb step.
-    :param neighbors:
-    :param procnum: number of this parallel process
-    :param return_dict: current, value, neighbors, value_neighbors are returned via this dictionary
-    """
-
-    def neighbors_func(state):
-        """
-        Creates all neighbors of a given state
-        A state's neighbor is identical to the state except at exactly one
-        position
-
-        :param state: binary array describing used PSUs
-        :return: 2D array containing all state's neighbors
-        """
-        neighbors = np.tile(state, (state.size, 1))
-        diagonal = np.diagonal(neighbors)
-
-        for i in range(state.size):
-            neighbors[i, i] = not diagonal[i]
-
-        return neighbors
-
-    def value_function(state, order, items, psus):
-        """
-        Evaluates how good a subset of PSU fulfills the order
-
-        :param state: binary array describing used PSUs
-        :return: value of state
-        """
-
-        psus_state = np.zeros((state.size, len(items)), dtype=int)
-
-        for index, psu in np.ndenumerate(state):
-            if psu:
-                psus_state[index] = psus[index]
-
-        items = np.bitwise_or.reduce(psus_state, 0)
-        total_items = items[order]
-        # print(state, total_items, end="")
-
-        if np.all(total_items):
-            return 2 * np.count_nonzero(order) - np.count_nonzero(state)
-
-        else:
-            return -10 * np.count_nonzero(total_items == 0)
-
-
-    # Choose the biggest neighbour
-    max_neighbor = neighbors[np.argmax(np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors))]
-
-    # Calculate new current and view it
-    current = max_neighbor
-    value = value_function(current, order, items, psus)
-
-    # Create new neighbours and their values
-    neighbors = neighbors_func(current)
-    value_neighbors = np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors)
-
-    return_dict[procnum] = current, value, neighbors, value_neighbors
 
 ''' Testing the Search '''
 

@@ -1,5 +1,4 @@
 import numpy as np
-from view import Print_View
 from multiprocessing import Process, Manager
 import time
 import scipy
@@ -301,7 +300,7 @@ class Local_Beam_Search(Abstract_Search):
 class Simulated_Annealing(Abstract_Search):
 
     def schedule(self, temp, t):
-        # Temperature is lowered by one in each step
+        # Temperature is lowered by one every t'th step
         if t % 2 == 0:
             return temp - 1
         else:
@@ -392,8 +391,8 @@ class Parallel_Hillclimbing(Abstract_Search):
             terminated = True
             for i in range(k):
                 if not terminations[i]:
-                    terminated = terminated and self.termination(return_dict[i][1], return_dict[i][3])
                     terminations[i] = self.termination(return_dict[i][1], return_dict[i][3])
+                    terminated = terminations[i] and terminated
                     neighborss[i] = return_dict[i][2]
                     value_neighbors[i] = return_dict[i][3]
                     values[i] = return_dict[i][1]
@@ -480,9 +479,6 @@ if __name__ == '__main__':
     s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-
-    sa.print_solution(s.search())
-
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 

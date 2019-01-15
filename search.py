@@ -105,30 +105,30 @@ class Abstract_Search():
         """
         #print(final_state)
 
+        output = ""
+
         # Numbers of psus needed
         number_of_psus = np.count_nonzero(final_state)
-        print('Number of PSUs needed:', number_of_psus)
+        output += "Number of PSUs needed: {}\n\n".format(number_of_psus)
 
         psus_used_indices = np.nonzero(final_state)[0]
         psus_used = self.psus[psus_used_indices]
 
         order_raw = set(compress(self.items, self.order))
-        print("Order:", order_raw)
-        print()
+
+        output += "Order: {}\n\n".format(order_raw)
 
         for i in range(number_of_psus):
-            print(f"PSU n°{psus_used_indices[i] + 1}", end="\t")
+            output += "PSU n°{}\t".format(psus_used_indices[i] + 1)
 
             items_in_psu = np.nonzero(np.asarray(psus_used[i]))
             items_in_psu = set(np.asarray(self.items)[items_in_psu])
 
             items_in_order = items_in_psu.intersection(order_raw)
 
-            print(items_in_order)
+            output += str(items_in_order) + "\n"
 
-
-
-
+        return output
 
 
 
@@ -162,10 +162,7 @@ class Abstract_Search():
         :param value_neighbors: list of values
         :return: Bool
         """
-        if np.any(value_neighbors > value):
-            return False
-        else:
-            return True
+        return not np.any(value_neighbors > value)
 
 
 class Hill_Climbing(Abstract_Search):
@@ -324,8 +321,7 @@ class Simulated_Annealing(Abstract_Search):
                 print(current, value)
             else:
                 self.log_var.set(value)
-                if self.window is not None:
-                    self.window.update()
+                self.window.update()
 
 
 

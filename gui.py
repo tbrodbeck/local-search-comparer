@@ -39,7 +39,7 @@ def start_algorithm():
         var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
 
         alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
-        alg.search()
+        result = alg.search()
 
     else:
 
@@ -51,11 +51,21 @@ def start_algorithm():
         alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(),
             var_algorithm_status, w
         )
-        alg.search(4)
+
+        result = alg.search(4)
+
+    text_status["state"] = "normal"
+    text_status.delete("1.0", tk.END)
+    text_status.insert(tk.END, alg.print_solution(result))
+    text_status["state"] = "disabled"
+
+widget_plot = None
 
 def update_graph(value = None):
     # updates the graph with a new value
     # works by just creating a new graph, which is slow, but the alternative is annoying to implement
+
+    global widget_plot
 
     if value is not None: value_history.append(value)
 
@@ -72,8 +82,13 @@ def update_graph(value = None):
 
     canvas = FigureCanvasTkAgg(fig, master = frame_graph)
     canvas.draw()
-    plt_widget = canvas.get_tk_widget()
-    plt_widget.grid(row = 0, column = 0, columnspan = 2)
+
+    old_widget = widget_plot
+
+    widget_plot = canvas.get_tk_widget()
+    widget_plot.grid(row = 0, column = 0, columnspan = 2)
+
+    if old_widget is not None: old_widget.destroy()
 
 
 if __name__ == "__main__":

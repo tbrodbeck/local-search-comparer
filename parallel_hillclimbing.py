@@ -1,5 +1,5 @@
 import numpy as np
-from multiprocessing import Process, Manager 
+from multiprocessing import Process, Manager
 
 from search import Abstract_Search
 from searchutils import value_function, neighbors_func
@@ -18,6 +18,7 @@ class Parallel_Hillclimbing(Abstract_Search):
         terminations = [False for i in range(k)]
 
         # save states
+        states = [0 for i in range(k)]
         values = [0 for i in range(k)]
         neighborss = [0 for i in range(k)]
         value_neighbors = [0 for i in range(k)]
@@ -37,7 +38,7 @@ class Parallel_Hillclimbing(Abstract_Search):
             jobs = []
             for i in range(k):
                 if not terminations[i]:
-                    p = Process(target=search_step, args=(neighborss[i], i, return_dict, self.order, self.items, self.psus))
+                    p = Process(target=_search_step, args=(neighborss[i], i, return_dict, self.order, self.items, self.psus))
                     jobs.append(p)
                     p.start()
 
@@ -49,6 +50,8 @@ class Parallel_Hillclimbing(Abstract_Search):
             terminated = True
             for i in range(k):
                 if not terminations[i]:
+                    states[i] = return_dict[i][0]
+
                     terminations[i] = self.termination(return_dict[i][1], return_dict[i][3])
                     terminated = terminations[i] and terminated
                     neighborss[i] = return_dict[i][2]
@@ -62,10 +65,10 @@ class Parallel_Hillclimbing(Abstract_Search):
                 self.log_var.set(values)
                 self.window.update()
 
+        return states[values.index(max(values))]
 
 
-
-def search_step(neighbors, procnum, return_dict, order, items, psus):
+def _search_step(neighbors, procnum, return_dict, order, items, psus):
     """
     This is a function that does one single hillclimb step.
     :param neighbors:

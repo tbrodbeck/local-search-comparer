@@ -9,7 +9,7 @@ order_size = 35
 # Create items list
 
 list_items = [f'Item_{number} ' for number in list(range(data_size))]
-list_items[-1] = list_items[-1].rstrip() 
+#list_items[-1] = list_items[-1].rstrip() 
 
 
 # create PSUs
@@ -22,7 +22,7 @@ for i in range(psus_number):
     for j in range(random.randint(1, int(data_size *  2 / 4))):
         current_psu.add(random.choice(list_items))
 
-    current_psu = [f'{elem} ' for elem in list(current_psu)]
+    current_psu = [f'{elem}' for elem in list(current_psu)]
     current_psu[-1] = current_psu[-1].rstrip()
     
     psus.append(current_psu)
@@ -47,7 +47,10 @@ order = np.random.choice(list_items, order_size, replace=False)
 
 with open(f'order_{example_id}.txt', 'w+') as f:
     
-    for item in order:
+    for item in order[:-1]:
         f.write(item)
-        f.write(' ')
+
+    order[-1] = order[-1].rstrip()
+    f.write(order[-1])
+    
 

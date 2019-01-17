@@ -1,0 +1,12 @@
+iphone0 iphone1 iphone2 iphone3 iphone4 iphone5 iphone6 iphone7 iphone8 iphone9 iphone10 iphone11 iphone12 iphone13 iphone14 iphone15 iphone16 iphone17 iphone18 iphone19
+
+iphone6 iphone9 iphone7
+iphone18 iphone11
+iphone8 iphone14 iphone3
+iphone0 iphone9 iphone17
+iphone10 iphone13
+iphone12 iphone4 iphone7
+iphone2 iphone16 iphone7
+iphone5 iphone16 iphone2
+iphone11
+iphone13 iphone19

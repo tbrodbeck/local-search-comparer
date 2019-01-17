@@ -3,8 +3,8 @@ import numpy as np
 
 
 data_size = 100
-psus_number = 50
-order_size = 35
+psus_number = 55
+order_size = 10
 
 # Create items list
 
@@ -19,7 +19,7 @@ psus = []
 for i in range(psus_number):
     current_psu = set()
     
-    for j in range(random.randint(1, int(data_size *  2 / 4))):
+    for j in range(random.randint(1, int(data_size *  2 / 6))):
         current_psu.add(random.choice(list_items))
 
     current_psu = [f'{elem}' for elem in list(current_psu)]

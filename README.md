@@ -1,8 +1,8 @@
 # Methods of AI - Coding Task
-Authors: Till Brodbeck, Esther Chevalier, Sarah Neuhoff, Sören Selbach
+Authors: Tillmann Brodbeck, Esther Chevalier, Sarah Neuhoff, Sören Selbach
 
 ## Required Libraries
-The program was developed and tested with `python 3.7.1` the following libraries:
+The program was developed and tested with `python 3.7.1` and the following libraries:
  - `numpy (1.16.0)`
  - `matplotlib (3.0.2)`
  - `tkinter (8.6)`

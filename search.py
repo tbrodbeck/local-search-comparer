@@ -305,7 +305,7 @@ class Simulated_Annealing(Abstract_Search):
             delta_e = self.value_function(next_neighbor) - self.value_function(current)
 
             # If the random neighbour is better, continue search with it
-            if delta_e >= 0:
+            if delta_e > 0:
                 current = next_neighbor
 
             # If it is worse, continue with the random neighbour

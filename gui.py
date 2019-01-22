@@ -13,6 +13,13 @@ from parallel_hillclimbing import Parallel_Hillclimbing
 
 from listvar import ListVar
 
+# configuration of text output of the io
+start_string = "Edmund Hillary welcomes you and invites you to find a local search solution for" +\
+                   " your intelligent warehouse system.\n\nPlease select a warehouse file and an order " +\
+                   "file and a configuration of your choice."
+end_string = "\n\nFeel free to try another configuration."
+err_string = "Please input correct files!\n\n\n"
+
 def ask_filename(title, output_var):
     # on-click handler for open-buttons
     types = [("text files (*.txt)", "*.txt"), ("all files", "*.*")]
@@ -60,17 +67,18 @@ def start_algorithm():
 
         text_status["state"] = "normal"
         text_status.delete("1.0", tk.END)
-        text_status.insert(tk.END, alg.print_solution(result))
+        text_status.insert(tk.END, "Search Results of " + alg_string + ":\n\n\n" +\
+                           alg.print_solution(result) + end_string)
         text_status["state"] = "disabled"
 
         button_start["state"] = "normal"
         button_start["text"] = "Start"
 
     # if a wrong warehouse or order is inserted
-    except FileNotFoundError as err:
+    except Exception as err:
         text_status["state"] = "normal"
         text_status.delete("1.0", tk.END)
-        text_status.insert(tk.END, err)
+        text_status.insert(tk.END, err_string + start_string)
         text_status["state"] = "disabled"
 
         button_start["state"] = "normal"
@@ -117,10 +125,10 @@ if __name__ == "__main__":
     # define tkinter variables to be used
 
     var_warehouse_path = tk.StringVar(w)
-    var_warehouse_path.set("please select warehouse file")
+    var_warehouse_path.set("Please select correct warehouse file.")
 
     var_order_path = tk.StringVar(w)
-    var_order_path.set("please select order file")
+    var_order_path.set("Please select correct order file.")
 
     algorithm_lookup = {
         "Hillclimbing": Hill_Climbing,
@@ -190,8 +198,6 @@ if __name__ == "__main__":
     text_status.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "EW")
     text_status["state"] = "normal"
     text_status.delete("1.0", tk.END)
-    start_string = "Edmund Hillary welcomes you and invites you to find a local search solution for" +\
-                   " your intelligent warehouse system.\n\nPlease select a warehouse file and a order file."
     text_status.insert(tk.END, start_string)
     text_status["state"] = "disabled"
 

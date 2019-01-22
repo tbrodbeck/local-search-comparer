@@ -111,8 +111,9 @@ class Abstract_Search():
 
     def print_solution(self, final_state):
         """
+        Returns a string representation of the final state with Information of the order, the value of the end
+        state and the PSUs needed including their used items
         """
-        #print(final_state)
 
         output = ""
 
@@ -301,7 +302,7 @@ class Local_Beam_Search(Abstract_Search):
 class Simulated_Annealing(Abstract_Search):
 
     def schedule(self, t):
-        return 500 - t
+        return 100 - t
 
     def search(self):
 
@@ -344,7 +345,7 @@ class Simulated_Annealing(Abstract_Search):
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
+    s = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
     #s.get_psu("data/problem_100_items.txt", s.items, s.order)
     # s.value_function(s.start_state)
 

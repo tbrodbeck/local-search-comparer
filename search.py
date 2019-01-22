@@ -17,8 +17,8 @@ class Abstract_Search():
         self.directories = [warehouse, order]
         self.items = self.get_items(warehouse)
         self.order = self.open_order(order, self.items)
-        self.psus = self.get_psus(warehouse, self.items, self.order)
-        self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
+        self.psus, self.psu_nrs = self.get_psus(warehouse, self.items, self.order)
+        self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.items), 1 - (np.count_nonzero(self.order) / len(self.items))])
         self.log_var = log_var
         self.window = window
 
@@ -54,19 +54,22 @@ class Abstract_Search():
 
     def get_psus(self, path, items, order):
         """
-        Retrieves a list of all PSUs from the given file
-        A PSU is described by a binary array
+        Retrieves a list of the PSUs that contain items of the current order
+        A PSU is described by a binary array that contains the order items
 
         :param path: file path
         :param items: list of all items
-        :return: 2D array containing all psus
+        :return: 2D array containing the psus
         """
         with open(path) as f:
             data = f.read()
 
         lines = data.split("\n")
 
-        psus = np.zeros((len(lines) - 2, np.count_nonzero(order)), dtype=bool)
+        # collect the important psus for our search and remember their psu-nr
+        psus = []
+        psu_nrs = []
+
         order_index = np.nonzero(order)
 
         for index, line in enumerate(lines[2:]):
@@ -78,11 +81,12 @@ class Abstract_Search():
                 psu_temp[item_index] = 1
 
             if np.any(psu_temp[order_index]):
-                psus[index] = psu_temp[order_index]
+                psus.append(psu_temp[order_index])
+                psu_nrs.append(index)
 
-        psus = np.array(psus)
-        print(psus)
-        return psus
+        psus = np.asarray(psus)
+        psu_nrs = np.asarray(psu_nrs)
+        return psus, psu_nrs
 
 
     def open_order(self, path, items):
@@ -349,4 +353,4 @@ if __name__ == '__main__':
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     #s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 
-    #s2.search(2)
+    s.search()

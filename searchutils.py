@@ -24,7 +24,7 @@ def value_function(state, order, items, psus):
     :param state: binary array describing used PSUs
     :return: value of state
     """
-
+    print(state, order, items, psus)
     psus_state = np.zeros((state.size, len(items)), dtype=int)
 
     for index, psu in np.ndenumerate(state):

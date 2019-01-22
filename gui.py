@@ -24,6 +24,9 @@ def start_algorithm():
     global value_history
 
     # on-click handler for start button
+
+    button_start["state"] = "disabled"
+
     alg_string = var_algorithm.get()
     AlgorithmClass = algorithm_lookup[alg_string]
 
@@ -58,6 +61,8 @@ def start_algorithm():
     text_status.delete("1.0", tk.END)
     text_status.insert(tk.END, alg.print_solution(result))
     text_status["state"] = "disabled"
+
+    button_start["state"] = "normal"
 
 widget_plot = None
 

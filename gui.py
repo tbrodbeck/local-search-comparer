@@ -38,7 +38,7 @@ def start_algorithm():
 
         # variable that the search algorithms can write to, to communicate the value-function change over time
         var_algorithm_status = tk.IntVar(w)
-        # add on-change handler to update graph
+        # add on-change handler for updating the graph
         var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
 
         alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
@@ -55,7 +55,7 @@ def start_algorithm():
             var_algorithm_status, w
         )
 
-        result = alg.search(4)
+        result = alg.search(var_threads.get())
 
     text_status["state"] = "normal"
     text_status.delete("1.0", tk.END)
@@ -122,6 +122,9 @@ if __name__ == "__main__":
     var_algorithm = tk.StringVar(w)
     var_algorithm.set("Hillclimbing")
 
+    var_threads = tk.IntVar(w)
+    var_threads.set(4)
+
     var_status = tk.StringVar(w)
     var_status.set("Press 'Start' to run the selected algorithm.")
 
@@ -164,24 +167,32 @@ if __name__ == "__main__":
         *algorithm_lookup.keys())
     option_algorithm.grid(row = 4, columnspan = 2, pady = (10, 0), sticky = "EW")
 
-    text_status = tk.Text(frame_controls, width = 1, height = 19, bg = "#eeeeee")
-    text_status.grid(row = 5, columnspan = 2, pady = (5, 0), sticky = "EW")
+    # label and drop-down menu for selecting number of threads
+    label_threads = tk.Label(frame_controls, text = "Threads / Beams:", bg = "white")
+    label_threads.grid(row = 5, column = 0, pady = (10, 0), sticky = "EW")
+
+    option_threads = ttk.OptionMenu(frame_controls, var_threads, 4, *range(1, 11))
+    option_threads.grid(row = 5, column = 1, pady = (10, 0), sticky = "EW")
+
+    # text area for displaying the result of the algorithm
+    text_status = tk.Text(frame_controls, width = 1, height = 23, bg = "#eeeeee")
+    text_status.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "EW")
     text_status["state"] = "disabled"
 
     # button for running the selected algorithm
     button_start = ttk.Button(frame_controls, text = "Start", command = start_algorithm)
-    button_start.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "WE")
+    button_start.grid(row = 7, columnspan = 2, pady = (5, 0), sticky = "WE")
 
     # GRAPH
 
     # create Figure and Axes object
     value_history = []
-    fig = Figure(figsize = (5, 5))
+    fig = Figure(figsize = (6, 6))
     fig.set_tight_layout(True)
 
     ax = fig.add_subplot(1, 1, 1)
 
-
+    # call update_graph once to initialize the widget
     update_graph()
 
 

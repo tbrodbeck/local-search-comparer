@@ -67,10 +67,10 @@ def start_algorithm():
         button_start["text"] = "Start"
 
     # if a wrong warehouse or order is inserted
-    except FileNotFoundError as err:
+    except Exception as err:
         text_status["state"] = "normal"
         text_status.delete("1.0", tk.END)
-        text_status.insert(tk.END, err)
+        text_status.insert(tk.END, 'Please input correct files!\n\n\n' + start_string)
         text_status["state"] = "disabled"
 
         button_start["state"] = "normal"
@@ -117,10 +117,10 @@ if __name__ == "__main__":
     # define tkinter variables to be used
 
     var_warehouse_path = tk.StringVar(w)
-    var_warehouse_path.set("please select warehouse file")
+    var_warehouse_path.set("Please select correct warehouse file.")
 
     var_order_path = tk.StringVar(w)
-    var_order_path.set("please select order file")
+    var_order_path.set("Please select correct order file.")
 
     algorithm_lookup = {
         "Hillclimbing": Hill_Climbing,
@@ -191,7 +191,8 @@ if __name__ == "__main__":
     text_status["state"] = "normal"
     text_status.delete("1.0", tk.END)
     start_string = "Edmund Hillary welcomes you and invites you to find a local search solution for" +\
-                   " your intelligent warehouse system.\n\nPlease select a warehouse file and a order file."
+                   " your intelligent warehouse system.\n\nPlease select a warehouse file and an order " +\
+                   "file and a configuration of your choice."
     text_status.insert(tk.END, start_string)
     text_status["state"] = "disabled"
 

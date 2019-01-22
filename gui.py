@@ -25,6 +25,7 @@ def start_algorithm():
 
     # on-click handler for start button
 
+    button_start["text"] = "Running..."
     button_start["state"] = "disabled"
 
     alg_string = var_algorithm.get()
@@ -63,6 +64,7 @@ def start_algorithm():
     text_status["state"] = "disabled"
 
     button_start["state"] = "normal"
+    button_start["text"] = "Start"
 
 widget_plot = None
 

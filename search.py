@@ -301,20 +301,21 @@ class Local_Beam_Search(Abstract_Search):
 
 class Simulated_Annealing(Abstract_Search):
 
-    def schedule(self, t):
-        return 100 - t
+    def schedule(self, temp):
+        return temp * 0.9
 
     def search(self):
 
         current = self.start_state
+        temp = 100
 
         for t in count():
 
             # Updates temperature using the time schedule
-            temp = self.schedule(t)
+            temp = self.schedule(temp)
 
             # Returns current state if temperature is 0
-            if temp == 0:
+            if temp < 0.000001:
                 return current
 
             # Choose random neighbour and calculates ∆E
@@ -322,7 +323,7 @@ class Simulated_Annealing(Abstract_Search):
             delta_e = self.value_function(next_neighbor) - self.value_function(current)
 
             # If the random neighbour is better, continue search with it
-            if delta_e > 0:
+            if delta_e >= 0:
                 current = next_neighbor
 
             # If it is worse, continue with the random neighbour

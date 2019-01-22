@@ -79,14 +79,14 @@ def _search_step(neighbors, procnum, return_dict, order, items, psus):
 
 
     # Choose the biggest neighbour
-    max_neighbor = neighbors[np.argmax(np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors))]
+    max_neighbor = neighbors[np.argmax(np.apply_along_axis(lambda x: value_function(x, order, psus), 1, neighbors))]
 
     # Calculate new current and view it
     current = max_neighbor
-    value = value_function(current, order, items, psus)
+    value = value_function(current, order, psus)
 
     # Create new neighbours and their values
     neighbors = neighbors_func(current)
-    value_neighbors = np.apply_along_axis(lambda x: value_function(x, order, items, psus), 1, neighbors)
+    value_neighbors = np.apply_along_axis(lambda x: value_function(x, order, psus), 1, neighbors)
 
     return_dict[procnum] = current, value, neighbors, value_neighbors

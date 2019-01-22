@@ -17,26 +17,28 @@ def neighbors_func(state):
 
     return neighbors
 
-def value_function(state, order, items, psus):
+def value_function(state, order, psus):
     """
     Evaluates how good a subset of PSU fulfills the order
 
     :param state: binary array describing used PSUs
+    :param order: binary representation of current order
+    :param psus: 2d array containing binary representation of all psus
     :return: value of state
     """
-    print(state, order, items, psus)
-    psus_state = np.zeros((state.size, len(items)), dtype=int)
+    # a list of the psus (including its items) used in the state
+    psus_in_state = np.compress(state, psus, axis=0)
 
-    for index, psu in np.ndenumerate(state):
-        if psu:
-            psus_state[index] = psus[index]
+    # CALCULATE VALUES
+    # if the state is empty
+    if len(psus_in_state) == 0:
+        return -10 * (np.size(state))
+    # else count the missing elements
+    items = np.bitwise_or.reduce(psus_in_state, 0)
 
-    items = np.bitwise_or.reduce(psus_state, 0)
-    total_items = items[order]
-    # print(state, total_items, end="")
-
-    if np.all(total_items):
+    # if all elements are covered, minimize the amount of used psus
+    if np.all(items):
         return 2 * np.count_nonzero(order) - np.count_nonzero(state)
-
+    # else elements are missing
     else:
-        return -10 * np.count_nonzero(total_items == 0)
+        return -1 * (np.size(items) - np.count_nonzero(items))

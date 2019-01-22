@@ -121,12 +121,10 @@ class Abstract_Search():
         output += "Number of PSUs needed: {}\n\n".format(number_of_psus)
 
         psus_state = np.compress(final_state, self.psus, axis=0)
-        print(psus_state)
         order_raw = np.compress(self.order, self.items)
         output += "Order: " + str(set(order_raw)) + '\n\n'
 
         for index, psu in enumerate(psus_state):
-            print("PSU:", psu)
             items_in_psu = np.compress(psu, order_raw)
             output += f"PSU Nr.{self.psu_nrs[index] + 1}: {items_in_psu}" + '\n'
 
@@ -161,7 +159,7 @@ class Abstract_Search():
         :return: value of state
         """
 
-        return value_function(state, self.order, self.items, self.psus)
+        return value_function(state, self.order, self.psus)
 
 
     def neighbors(self, state):
@@ -215,7 +213,6 @@ class Hill_Climbing(Abstract_Search):
             # Create new neighbours and their values
             neighbors = self.neighbors(current)
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
-
 
         return current
 
@@ -344,12 +341,9 @@ class Simulated_Annealing(Abstract_Search):
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    s = Hill_Climbing('data/problem_20_items.txt', 'data/order_20_items.txt')
+    s = Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     #s.get_psu("data/problem_100_items.txt", s.items, s.order)
-    s.get_psus("data/problem_20_items.txt", s.items, s.order)
-    start = s.start_state
-    print("Start:", start)
-    print(s.print_solution(start))
+    # s.value_function(s.start_state)
 
     #s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     #s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
@@ -357,4 +351,4 @@ if __name__ == '__main__':
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     #s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 
-    #s.search()
+    print(s.print_solution(s.search()))

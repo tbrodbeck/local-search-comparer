@@ -34,38 +34,47 @@ def start_algorithm():
 
     # reset graph history
     value_history = []
+    try:
+        if alg_string != "Local Beam Search" and alg_string != "Parallel Hillclimbing":
 
-    if alg_string != "Local Beam Search" and alg_string != "Parallel Hillclimbing":
+            # variable that the search algorithms can write to, to communicate the value-function change over time
+            var_algorithm_status = tk.IntVar(w)
+            # add on-change handler for updating the graph
+            var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
 
-        # variable that the search algorithms can write to, to communicate the value-function change over time
-        var_algorithm_status = tk.IntVar(w)
-        # add on-change handler for updating the graph
-        var_algorithm_status.trace("w", lambda *args: update_graph([var_algorithm_status.get()]))
+            alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
+            result = alg.search()
 
-        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(), var_algorithm_status, w)
-        result = alg.search()
+        else:
 
-    else:
+            # for local beam search and parallel hillclimbing we need a variable that can handle lists
+            var_algorithm_status = ListVar(4)
+            # again add on-change handler
+            var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
 
-        # for local beam search and parallel hillclimbing we need a variable that can handle lists
-        var_algorithm_status = ListVar(4)
-        # again add on-change handler
-        var_algorithm_status.trace(lambda: update_graph(var_algorithm_status.get()))
+            alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(),
+                var_algorithm_status, w
+            )
 
-        alg = AlgorithmClass(var_warehouse_path.get(), var_order_path.get(),
-            var_algorithm_status, w
-        )
+            result = alg.search(var_threads.get())
 
-        result = alg.search(var_threads.get())
+        text_status["state"] = "normal"
+        text_status.delete("1.0", tk.END)
+        text_status.insert(tk.END, alg.print_solution(result))
+        text_status["state"] = "disabled"
 
-    text_status["state"] = "normal"
-    text_status.delete("1.0", tk.END)
-    text_status.insert(tk.END, alg.print_solution(result))
-    text_status["state"] = "disabled"
+        button_start["state"] = "normal"
+        button_start["text"] = "Start"
 
-    button_start["state"] = "normal"
-    button_start["text"] = "Start"
+    # if a wrong warehouse or order is inserted
+    except FileNotFoundError as err:
+        text_status["state"] = "normal"
+        text_status.delete("1.0", tk.END)
+        text_status.insert(tk.END, err)
+        text_status["state"] = "disabled"
 
+        button_start["state"] = "normal"
+        button_start["text"] = "Start"
 widget_plot = None
 
 def update_graph(value = None):
@@ -179,6 +188,11 @@ if __name__ == "__main__":
     # text area for displaying the result of the algorithm
     text_status = tk.Text(frame_controls, width = 1, height = 23, bg = "#eeeeee")
     text_status.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "EW")
+    text_status["state"] = "normal"
+    text_status.delete("1.0", tk.END)
+    start_string = "Edmund Hillary welcomes you and invites you to find a local search solution for" +\
+                   " your intelligent warehouse system.\n\nPlease select a warehouse file and a order file."
+    text_status.insert(tk.END, start_string)
     text_status["state"] = "disabled"
 
     # button for running the selected algorithm

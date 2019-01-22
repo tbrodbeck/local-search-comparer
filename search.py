@@ -1,7 +1,6 @@
 import numpy as np
 from multiprocessing import Process, Manager
 import time
-import scipy
 
 from itertools import count, compress
 import random

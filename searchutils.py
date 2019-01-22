@@ -38,7 +38,7 @@ def value_function(state, order, psus):
 
     # if all elements are covered, minimize the amount of used psus
     if np.all(items):
-        return 2 * np.count_nonzero(order) - np.count_nonzero(state)
+        return np.count_nonzero(state == False)
     # else elements are missing
     else:
         return -1 * (np.size(items) - np.count_nonzero(items))

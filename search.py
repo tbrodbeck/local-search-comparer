@@ -126,30 +126,13 @@ class Abstract_Search():
         order_raw = np.compress(self.order, self.items)
         output += "Order: " + str(set(order_raw)) + '\n\n'
 
-        output += f"Value of end state: {self.value_function(final_state)}\n\n"
 
         for index, psu in enumerate(psus_state):
             items_in_psu = np.compress(psu, order_raw)
             output += f"PSU Nr.{self.psu_nrs[index] + 1}: {items_in_psu}" + '\n'
 
 
-        #
-        # psus_used_indices = np.nonzero(final_state)
-        # psus_used = self.psus[psus_used_indices]
-        #
-        # order_raw = set(compress(self.items, self.order))
-        #
-        # output += "Order: {}\n\n".format(order_raw)
-        #
-        # for i in range(number_of_psus):
-        #     output += "PSU n°{}\t".format(psus_used_indices[i] + 1)
-        #
-        #     items_in_psu = np.nonzero(np.asarray(psus_used[i]))
-        #     items_in_psu = set(np.asarray(self.order)[items_in_psu])
-        #
-        #     items_in_order = items_in_psu.intersection(order_raw)
-        #
-        #     output += str(items_in_order) + "\n"
+        output += f"\nValue of end state: {self.value_function(final_state)}\n"
 
         return output
 
@@ -336,7 +319,7 @@ class Simulated_Annealing(Abstract_Search):
             # Update graph
             value = self.value_function(current)
             if self.log_var == None:
-                print(current, value)
+                print(t, value)
             else:
                 self.log_var.set(value)
                 self.window.update()
@@ -347,13 +330,5 @@ class Simulated_Annealing(Abstract_Search):
 
 if __name__ == '__main__':
     s = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
-    #s.get_psu("data/problem_100_items.txt", s.items, s.order)
-    # s.value_function(s.start_state)
 
-    #s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
-    #s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
-    # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-    # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
-    #s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
-
-    print(s.print_solution(s.search()))
+    s.print_solution(s.search())

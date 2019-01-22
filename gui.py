@@ -186,7 +186,7 @@ if __name__ == "__main__":
     option_threads.grid(row = 5, column = 1, pady = (10, 0), sticky = "EW")
 
     # text area for displaying the result of the algorithm
-    text_status = tk.Text(frame_controls, width = 1, height = 23, bg = "#eeeeee")
+    text_status = tk.Text(frame_controls, width = 1, height = 23, bg = "#eeeeee", wrap = tk.WORD)
     text_status.grid(row = 6, columnspan = 2, pady = (5, 0), sticky = "EW")
     text_status["state"] = "normal"
     text_status.delete("1.0", tk.END)

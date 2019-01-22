@@ -16,8 +16,8 @@ class Abstract_Search():
     def __init__(self, warehouse, order, log_var = None, window = None):
         self.directories = [warehouse, order]
         self.items = self.get_items(warehouse)
-        self.psus = self.get_psus(warehouse, self.items)
         self.order = self.open_order(order, self.items)
+        self.psus = self.get_psus(warehouse, self.items, self.order)
         self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.psus), 1 - (np.count_nonzero(self.order) / len(self.psus))])
         self.log_var = log_var
         self.window = window
@@ -52,7 +52,7 @@ class Abstract_Search():
         return items
 
 
-    def get_psus(self, path, items):
+    def get_psus(self, path, items, order):
         """
         Retrieves a list of all PSUs from the given file
         A PSU is described by a binary array
@@ -65,18 +65,23 @@ class Abstract_Search():
             data = f.read()
 
         lines = data.split("\n")
-        psus = np.zeros((len(lines) - 2, len(items)), dtype=bool)
+
+        psus = np.zeros((len(lines) - 2, np.count_nonzero(order)), dtype=bool)
+        order_index = np.nonzero(order)
 
         for index, line in enumerate(lines[2:]):
+            psu_temp = np.zeros(len(items), dtype=bool)
             psu_items = line.split(" ")
 
             for item in psu_items:
                 item_index = items.index(item)
+                psu_temp[item_index] = 1
 
-                psus[index, item_index] = 1
+            if np.any(psu_temp[order_index]):
+                psus[index] = psu_temp[order_index]
 
         psus = np.array(psus)
-
+        print(psus)
         return psus
 
 
@@ -111,22 +116,33 @@ class Abstract_Search():
         number_of_psus = np.count_nonzero(final_state)
         output += "Number of PSUs needed: {}\n\n".format(number_of_psus)
 
-        psus_used_indices = np.nonzero(final_state)[0]
-        psus_used = self.psus[psus_used_indices]
+        psus_state = np.compress(final_state, self.psus, axis=0)
 
-        order_raw = set(compress(self.items, self.order))
+        order_raw = np.compress(self.order, self.items)
+        output += "Order: " + str(set(order_raw)) + '\n\n'
 
-        output += "Order: {}\n\n".format(order_raw)
+        for psu in psus_state:
+            items_in_psu = np.compress(psu, order_raw)
+            output += str(items_in_psu) + '\n'
 
-        for i in range(number_of_psus):
-            output += "PSU n°{}\t".format(psus_used_indices[i] + 1)
 
-            items_in_psu = np.nonzero(np.asarray(psus_used[i]))
-            items_in_psu = set(np.asarray(self.items)[items_in_psu])
-
-            items_in_order = items_in_psu.intersection(order_raw)
-
-            output += str(items_in_order) + "\n"
+        #
+        # psus_used_indices = np.nonzero(final_state)
+        # psus_used = self.psus[psus_used_indices]
+        #
+        # order_raw = set(compress(self.items, self.order))
+        #
+        # output += "Order: {}\n\n".format(order_raw)
+        #
+        # for i in range(number_of_psus):
+        #     output += "PSU n°{}\t".format(psus_used_indices[i] + 1)
+        #
+        #     items_in_psu = np.nonzero(np.asarray(psus_used[i]))
+        #     items_in_psu = set(np.asarray(self.order)[items_in_psu])
+        #
+        #     items_in_order = items_in_psu.intersection(order_raw)
+        #
+        #     output += str(items_in_order) + "\n"
 
         return output
 
@@ -279,22 +295,17 @@ class Local_Beam_Search(Abstract_Search):
 
 class Simulated_Annealing(Abstract_Search):
 
-    def schedule(self, temp, t):
-        # Temperature is lowered by one every t'th step
-        if t % 2 == 0:
-            return temp - 1
-        else:
-            return temp
+    def schedule(self, t):
+        return 500 - t
 
     def search(self):
 
         current = self.start_state
-        temp = 170
 
         for t in count():
 
             # Updates temperature using the time schedule
-            temp = self.schedule(temp, t)
+            temp = self.schedule(t)
 
             # Returns current state if temperature is 0
             if temp == 0:
@@ -328,13 +339,14 @@ class Simulated_Annealing(Abstract_Search):
 ''' Testing the Search '''
 
 if __name__ == '__main__':
-    s = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
-    # s.search()
+    s = Hill_Climbing('data/problem_20_items.txt', 'data/order_20_items.txt')
+    #s.get_psu("data/problem_100_items.txt", s.items, s.order)
+    s.get_psus("data/problem_20_items.txt", s.items, s.order)
 
-    s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
-    s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
+    #s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
+    #s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
     # s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
-    s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
+    #s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 
-    s2.search(2)
+    #s2.search(2)

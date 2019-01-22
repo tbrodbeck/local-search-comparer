@@ -121,13 +121,14 @@ class Abstract_Search():
         output += "Number of PSUs needed: {}\n\n".format(number_of_psus)
 
         psus_state = np.compress(final_state, self.psus, axis=0)
-
+        print(psus_state)
         order_raw = np.compress(self.order, self.items)
         output += "Order: " + str(set(order_raw)) + '\n\n'
 
-        for psu in psus_state:
+        for index, psu in enumerate(psus_state):
+            print("PSU:", psu)
             items_in_psu = np.compress(psu, order_raw)
-            output += str(items_in_psu) + '\n'
+            output += f"PSU Nr.{self.psu_nrs[index] + 1}: {items_in_psu}" + '\n'
 
 
         #
@@ -346,6 +347,9 @@ if __name__ == '__main__':
     s = Hill_Climbing('data/problem_20_items.txt', 'data/order_20_items.txt')
     #s.get_psu("data/problem_100_items.txt", s.items, s.order)
     s.get_psus("data/problem_20_items.txt", s.items, s.order)
+    start = s.start_state
+    print("Start:", start)
+    print(s.print_solution(start))
 
     #s4 = First_Choice_Hill_Climbing('data/problem1.txt', 'data/order11.txt')
     #s3 = Hill_Climbing('data/problem1.txt', 'data/order12.txt')
@@ -353,4 +357,4 @@ if __name__ == '__main__':
     # s2 = Local_Beam_Search('data/problem1.txt', 'data/order11.txt')
     #s2 = Parallel_Hillclimbing('data/problem1.txt', 'data/order11.txt')
 
-    s.search()
+    #s.search()

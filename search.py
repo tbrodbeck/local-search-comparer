@@ -116,20 +116,22 @@ class Abstract_Search():
 
         output = ""
 
+        # display order
         psus_state = np.compress(final_state, self.psus, axis=0)
         order_raw = np.compress(self.order, self.items)
         output += "Order: " + str(set(order_raw)) + '\n\n'
 
+        #  Numbers of psus needed
+        number_of_psus = np.count_nonzero(final_state)
+        output += "Number of PSUs needed: {}\n\n".format(number_of_psus)
 
+        # display psus used
         for index, psu in enumerate(psus_state):
             items_in_psu = np.compress(psu, order_raw)
             output += f"PSU Nr.{self.psu_nrs[index] + 1}: {items_in_psu}" + '\n'
 
-        # Numbers of psus needed
-        number_of_psus = np.count_nonzero(final_state)
-        output += "\nNumber of PSUs needed: {}\n\n".format(number_of_psus)
-
-        output += f"Value of end state: {self.value_function(final_state)}\n"
+        # display value
+        output += f"\nValue of end state: {self.value_function(final_state)}\n"
 
         return output
 

@@ -36,6 +36,8 @@ def start_algorithm():
     button_start["text"] = "Running..."
     button_start["state"] = "disabled"
 
+    w.update()
+
     alg_string = var_algorithm.get()
     AlgorithmClass = algorithm_lookup[alg_string]
 

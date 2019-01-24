@@ -25,8 +25,9 @@ To start the search, press the `Start` button. While the search is in progress, 
 
 The program is divided into several files:
 
-| `gui.py`                   | Main executable file. Contains the logic for the graphical user interface. Always run this file.                       |
+| File | Description |
 |----------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `gui.py`                   | Main executable file. Contains the logic for the graphical user interface. Always run this file.                       |
 | `search.py`                | Contains all local search algorithms except parallel hillclimbing, as well as an abstract class for search algorithms. |
 | `searchutils.py`           | Contains a function that returns the neighbors of a state, and a function that computes the value of a state.          |
 | `parallel_hillclimbing.py` |  Contains parallel hillclimbing. Needs to be its own file for reasons of multiprocessing.                              |

@@ -1,4 +1,9 @@
 class ListVar(object):
+    """
+    A traceable list. Has getter and setter methods and can register a callback method
+    that gets called whenever a new value is set.
+    """
+
     def __init__(self, length):
         self.data = [0] * length
         self.trace_callback = None

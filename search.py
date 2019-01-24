@@ -182,6 +182,8 @@ class Hill_Climbing(Abstract_Search):
 
         while not self.termination(value, value_neighbors):
 
+            t = time.time()
+
             iteration += 1
 
             # Choose the biggest neighbour
@@ -199,6 +201,9 @@ class Hill_Climbing(Abstract_Search):
             # Create new neighbours and their values
             neighbors = self.neighbors(current)
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
+
+            t = time.time() - t
+            print(t)
 
         return current
 

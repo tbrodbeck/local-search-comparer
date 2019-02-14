@@ -1,3 +1,5 @@
+"""Contains parallel hillclimbing. Needs to be its own file for reasons of multiprocessing."""
+
 import numpy as np
 from multiprocessing import Process, Manager
 

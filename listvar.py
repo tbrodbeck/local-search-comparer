@@ -1,3 +1,5 @@
+"""Contains a simple implementation of a traceable list."""
+
 class ListVar(object):
     """
     A traceable list. Has getter and setter methods and can register a callback method

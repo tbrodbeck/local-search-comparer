@@ -1,3 +1,5 @@
+"""Main executable file. Contains the logic for the graphical user interface. Always run this file."""
+
 import matplotlib
 matplotlib.use("TkAgg")
 

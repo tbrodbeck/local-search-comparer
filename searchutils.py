@@ -1,3 +1,5 @@
+""" Contains a function that returns the neighbors of a state, and a function that computes the value of a state. """
+
 import numpy as np
 
 def neighbors_func(state):

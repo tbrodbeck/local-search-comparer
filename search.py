@@ -1,3 +1,5 @@
+""" Contains all local search algorithms except parallel hillclimbing, as well as an abstract class for search algorithms. """
+
 import numpy as np
 from multiprocessing import Process, Manager
 import time

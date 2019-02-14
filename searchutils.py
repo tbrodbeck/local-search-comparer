@@ -15,7 +15,7 @@ def neighbors_func(state):
     # create diagonal matrix as mask where to invert values
     mask = np.eye(state.size, dtype = np.bool)
 
-    # apply logical not to masked values (i.e. along the diagonal)
+    # apply logical not to mask values (i.e. along the diagonal)
     np.logical_not(neighbors, out = neighbors, where = mask)
 
     return neighbors

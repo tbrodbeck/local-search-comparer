@@ -9,7 +9,7 @@ The program was developed and tested with `python 3.7.1` and the following libra
 
 In most cases any somewhat recent versions of these libraries should be fine.
 
-The program has been tested on Windows 10 and macOS Mojave.
+The program has been tested on Windows 10, macOS Mojave and Ubuntu 18.04.
 
 ## Usage
 The main executable file is `gui.py`. The command to run the program is simply `python gui.py`.

@@ -9,7 +9,7 @@ The program was developed and tested with `python 3.7.1` and the following libra
 
 In most cases any somewhat recent versions of these libraries should be fine.
 
-The program has been tested on Windows 10 and macOS Mojave.
+The program has been tested on Windows 10, macOS Mojave and Ubuntu 18.04.
 
 ## Usage
 The main executable file is `gui.py`. The command to run the program is simply `python gui.py`.
@@ -32,3 +32,7 @@ The program is divided into several files:
 | `searchutils.py`           | Contains a function that returns the neighbors of a state, and a function that computes the value of a state.          |
 | `parallel_hillclimbing.py` |  Contains parallel hillclimbing. Needs to be its own file for reasons of multiprocessing.                              |
 | `listvar.py`               | Contains a simple implementation of a traceable list.                                                                  |
+
+Each search algorithm is contained in a class that inherits from `Abstract_Search`. `Abstract_Search` implements functions to load the data files into numpy arrays and convert these back to a pretty string. It also provides bindings to `value_function` and `neighbors_func`, which cannot be implemented in this class directly for multiprocessing reasons, but instead are located in the `searchutils` module.
+
+Each algorithm class that inherits from `Abstract_Search` implements the `search` method, which contains the actual search algorithm. 

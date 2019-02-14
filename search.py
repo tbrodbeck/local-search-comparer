@@ -338,4 +338,3 @@ class Simulated_Annealing(Abstract_Search):
 if __name__ == '__main__':
     s = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
     s.search()
-    #s.print_solution(s.search())

@@ -136,7 +136,7 @@ if __name__ == "__main__":
         "Hillclimbing": Hill_Climbing,
         "First Choice Hillclimbing": First_Choice_Hill_Climbing,
         "Local Beam Search": Local_Beam_Search,
-        "Simulated Annealing with HC": Simulated_Annealing,
+        "Simulated Annealing with final Hillclimb": Simulated_Annealing,
         "Parallel Hillclimbing": Parallel_Hillclimbing,
     }
 

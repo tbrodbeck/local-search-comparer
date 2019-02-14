@@ -298,8 +298,7 @@ class Simulated_Annealing(Abstract_Search):
 
     def search(self):
 
-        current = self.start()[0]
-        temp = 100
+        current = self.start_state
 
         for t in count():
 
@@ -307,7 +306,7 @@ class Simulated_Annealing(Abstract_Search):
             temp = self.schedule(t)
 
             # Returns current state if temperature is 0
-            if t == 250:
+            if t == 500:
                 final_hc = Hill_Climbing(self.directories[0], self.directories[1], self.log_var, self.window)
                 final_hc.start_state = current
                 return final_hc.search()
@@ -341,4 +340,3 @@ class Simulated_Annealing(Abstract_Search):
 if __name__ == '__main__':
     s = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
     s.search()
-    #s.print_solution(s.search())

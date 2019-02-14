@@ -17,7 +17,9 @@ class Abstract_Search():
         self.items = self.get_items(warehouse)
         self.order = self.open_order(order, self.items)
         self.psus, self.psu_nrs = self.get_psus(warehouse, self.items, self.order)
-        self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order)/ len(self.items), 1 - (np.count_nonzero(self.order) / len(self.items))])
+        # init start_state
+        self.start_state = np.random.choice([True, False], len(self.psus), p=[np.count_nonzero(self.order) / len(self.items),
+                                            1 - (np.count_nonzero(self.order) / len(self.items))])
         self.log_var = log_var
         self.window = window
 
@@ -175,8 +177,10 @@ class Hill_Climbing(Abstract_Search):
     Starts with a random state and continues with the best state of its neighborhood until there is no improvement possible
     in the neighborhood (local maximum).
     """
-    def search(self):
+    def search(self, start_state=None):
+
         current, value, neighbors, value_neighbors = self.start()
+
 
         iteration = 0
 
@@ -203,7 +207,6 @@ class Hill_Climbing(Abstract_Search):
             value_neighbors = np.apply_along_axis(self.value_function, 1, neighbors)
 
             t = time.time() - t
-            print(t)
 
         return current
 
@@ -293,7 +296,7 @@ class Simulated_Annealing(Abstract_Search):
 
     def search(self):
 
-        current = self.start_state
+        current = self.start()[0]
         temp = 100
 
         for t in count():
@@ -302,8 +305,10 @@ class Simulated_Annealing(Abstract_Search):
             temp = self.schedule(t)
 
             # Returns current state if temperature is 0
-            if t == 500:
-                return current
+            if t == 250:
+                final_hc = Hill_Climbing(self.directories[0], self.directories[1], self.log_var, self.window)
+                final_hc.start_state = current
+                return final_hc.search()
 
             # Choose random neighbour and calculates ∆E
             next_neighbor = random.choice(self.neighbors(current))
@@ -317,7 +322,6 @@ class Simulated_Annealing(Abstract_Search):
             # with probability e^(∆E / temperature)
             else:
                 if random.random() < exp(delta_e / temp):
-                    #print("Probability:", exp(delta_e / temp))
                     current = next_neighbor
 
             # Update graph
@@ -334,5 +338,5 @@ class Simulated_Annealing(Abstract_Search):
 
 if __name__ == '__main__':
     s = Simulated_Annealing('data/problem1.txt', 'data/order11.txt')
-
-    s.print_solution(s.search())
+    s.search()
+    #s.print_solution(s.search())

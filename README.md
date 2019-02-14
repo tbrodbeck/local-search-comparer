@@ -22,3 +22,13 @@ The user can then choose one of the provided search algorithms from the first dr
 To start the search, press the `Start` button. While the search is in progress, the program **will not be responsive**. When the search is finished, the found solution will be displayed in the large text area on the left.
 
 ## Code Structure
+
+The program is divided into several files:
+
+| File | Description |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `gui.py`                   | Main executable file. Contains the logic for the graphical user interface. Always run this file.                       |
+| `search.py`                | Contains all local search algorithms except parallel hillclimbing, as well as an abstract class for search algorithms. |
+| `searchutils.py`           | Contains a function that returns the neighbors of a state, and a function that computes the value of a state.          |
+| `parallel_hillclimbing.py` |  Contains parallel hillclimbing. Needs to be its own file for reasons of multiprocessing.                              |
+| `listvar.py`               | Contains a simple implementation of a traceable list.                                                                  |

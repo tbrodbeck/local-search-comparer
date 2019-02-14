@@ -9,13 +9,17 @@ def neighbors_func(state):
     :param state: binary array describing used PSUs
     :return: 2D array containing all state's neighbors
     """
-    neighbors = np.tile(state, (state.size, 1))
-    diagonal = np.diagonal(neighbors)
+    # create output array with copies of the state
+    neighbors = np.broadcast_to(state, (state.size, state.size)).copy()
 
-    for i in range(state.size):
-        neighbors[i, i] = not diagonal[i]
+    # create diagonal matrix as mask where to invert values
+    mask = np.eye(state.size, dtype = np.bool)
+
+    # apply logical not to mask values (i.e. along the diagonal)
+    np.logical_not(neighbors, out = neighbors, where = mask)
 
     return neighbors
+
 
 def value_function(state, order, psus):
     """

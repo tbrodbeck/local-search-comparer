@@ -1,4 +1,4 @@
-# A tool to compare local search approaches for a warehouse storage allocation problem
+# A tool to compare local search approaches for storage allocation
 Authors: Tillmann Brodbeck, Esther Chevalier, Sarah Neuhoff, Sören Selbach
 
 ## Required Libraries

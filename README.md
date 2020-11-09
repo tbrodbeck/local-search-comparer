@@ -1,4 +1,4 @@
-# Methods of AI - Coding Task
+# A tool to compare local search approaches for a warehouse storage allocation problem
 Authors: Tillmann Brodbeck, Esther Chevalier, Sarah Neuhoff, Sören Selbach
 
 ## Required Libraries
